@@ -11,6 +11,3 @@ output "vm_ip_address" {
   value = module.cloud_computer.vm_ip_address
 }
 
-output "vm_dns_name" {
-  value = module.cloud_computer.vm_dns_name
-}

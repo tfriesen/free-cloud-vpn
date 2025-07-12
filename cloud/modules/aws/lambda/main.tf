@@ -1,10 +1,13 @@
 resource "aws_lambda_function" "basic_lambda" {
-  function_name = "basic_lambda"
-  handler       = "lambda_function.lambda_handler"
-  runtime       = "python3.12"
-  role          = aws_iam_role.lambda_exec.arn
-  filename      = "${path.module}/lambda_function.py"
-  source_code_hash = filebase64sha256("${path.module}/lambda_function.py")
+  function_name     = "basic_lambda"
+  handler           = "lambda_function.lambda_handler"
+  runtime           = "python3.12"
+  role              = aws_iam_role.lambda_exec.arn
+  filename          = "${path.module}/lambda_function.py"
+  source_code_hash  = filebase64sha256("${path.module}/lambda_function.py")
+  architectures     = ["arm64"]
+  memory_size       = 128
+  timeout           = 900
 }
 
 resource "aws_iam_role" "lambda_exec" {

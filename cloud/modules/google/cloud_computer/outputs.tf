@@ -15,6 +15,3 @@ output "vm_ip_address" {
   value = google_compute_instance.free_tier_vm.network_interface[0].access_config[0].nat_ip
 }
 
-output "vm_dns_name" {
-  value = google_compute_instance.free_tier_vm.network_interface[0].access_config[0].dns_name
-}
