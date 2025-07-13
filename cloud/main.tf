@@ -6,11 +6,13 @@ module "azure" {
 module "aws" {
   source      = "./modules/aws"
   count       = var.enable_aws ? 1 : 0
-  
+
   alert_email = var.aws_alert_email
 }
 
 module "google" {
-  source = "./modules/google"
-  count  = var.enable_google ? 1 : 0
+  source      = "./modules/google"
+  count       = var.enable_google ? 1 : 0
+  
+  vm_username = var.gcp_vm_username
 }

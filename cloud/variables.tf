@@ -20,6 +20,16 @@ variable "aws_alert_email" {
   }
 }
 
+variable "gcp_vm_username" {
+  description = "Username for the GCP VM instance"
+  type        = string
+  default     = "free-vpn-user"
+  validation {
+    condition     = can(regex("^[a-z][-a-z0-9]*$", var.gcp_vm_username))
+    error_message = "VM username must start with a letter and can only contain lowercase letters, numbers, and hyphens."
+  }
+}
+
 variable "enable_google" {
   description = "Enable Google Cloud module"
   type        = bool

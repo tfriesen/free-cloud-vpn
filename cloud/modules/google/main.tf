@@ -18,6 +18,7 @@ resource "time_sleep" "wait_compute_api" {
 }
 
 module "cloud_computer" {
+  vm_username = var.vm_username
   source = "./cloud_computer"
 
   # Ensure API is enabled and ready before creating compute resources

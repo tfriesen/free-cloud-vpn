@@ -1,3 +1,7 @@
+locals {
+  effective_ssh_key = var.ssh_keys != "" ? var.ssh_keys : "${chomp(tls_private_key.generated_key[0].public_key_openssh)} ${var.vm_username}"
+}
+
 resource "google_compute_firewall" "allow_inbound" {
   name    = "allow-inbound-ports"
   network = "default"
@@ -18,12 +22,6 @@ resource "google_compute_firewall" "allow_inbound" {
 resource "tls_private_key" "generated_key" {
   count     = var.ssh_keys == "" ? 1 : 0
   algorithm = "ED25519"
-}
-
-locals {
-  effective_ssh_key = var.ssh_keys != "" ? var.ssh_keys : (
-    tls_private_key.generated_key[0].public_key_openssh
-  )
 }
 
 resource "google_compute_instance" "free_tier_vm" {
@@ -50,7 +48,7 @@ resource "google_compute_instance" "free_tier_vm" {
   tags = ["http-server", "https-server"]
 
   metadata = {
-    ssh-keys = local.effective_ssh_key
+    ssh-keys = "${var.vm_username}:${local.effective_ssh_key}"
   }
 }
 

@@ -15,3 +15,9 @@ variable "network_tier" {
   type        = string
   default     = "STANDARD"
 }
+
+variable "vm_username" {
+  description = "The username for the VM instance"
+  type        = string
+  default     = "free-vpn-user"
+}
