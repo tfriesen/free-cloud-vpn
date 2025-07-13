@@ -3,8 +3,8 @@ resource "aws_lambda_function" "basic_lambda" {
   handler           = "lambda_function.lambda_handler"
   runtime           = "python3.12"
   role              = aws_iam_role.lambda_exec.arn
-  filename          = "${path.module}/lambda_function.py"
-  source_code_hash  = filebase64sha256("${path.module}/lambda_function.py")
+  filename          = data.archive_file.lambda_zip.output_path
+  source_code_hash  = data.archive_file.lambda_zip.output_base64sha256
   architectures     = ["arm64"]
   memory_size       = 128
   timeout           = 900

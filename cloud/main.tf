@@ -4,8 +4,10 @@ module "azure" {
 }
 
 module "aws" {
-  source = "./modules/aws"
-  count  = var.enable_aws ? 1 : 0
+  source      = "./modules/aws"
+  count       = var.enable_aws ? 1 : 0
+  
+  alert_email = var.aws_alert_email
 }
 
 module "google" {
