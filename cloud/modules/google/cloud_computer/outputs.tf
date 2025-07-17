@@ -15,3 +15,13 @@ output "vm_ip_address" {
   value = google_compute_instance.free_tier_vm.network_interface[0].access_config[0].nat_ip
 }
 
+output "dns_tunnel_password" {
+  description = "The password for the DNS tunnel (only if enabled and auto-generated)"
+  value       = var.enable_dns_tunnel && var.dns_tunnel_password == "" ? local.effective_dns_password : null
+  sensitive   = true
+}
+
+output "dns_tunnel_domain" {
+  description = "The domain configured for the DNS tunnel (only if enabled)"
+  value       = var.enable_dns_tunnel ? var.dns_tunnel_domain : null
+}

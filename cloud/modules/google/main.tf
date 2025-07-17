@@ -18,8 +18,13 @@ resource "time_sleep" "wait_compute_api" {
 }
 
 module "cloud_computer" {
-  vm_username = var.vm_username
   source = "./cloud_computer"
+  
+  vm_username = var.vm_username
+  enable_dns_tunnel = var.enable_dns_tunnel
+  dns_tunnel_password = var.dns_tunnel_password
+  dns_tunnel_domain = var.dns_tunnel_domain
+  dns_tunnel_ip     = var.dns_tunnel_ip
 
   # Ensure API is enabled and ready before creating compute resources
   depends_on = [time_sleep.wait_compute_api]
