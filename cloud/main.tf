@@ -19,6 +19,9 @@ module "google" {
   dns_tunnel_password  = var.dns_tunnel_password
   dns_tunnel_domain    = var.dns_tunnel_domain
   dns_tunnel_ip        = var.dns_tunnel_ip
+  enable_icmp_tunnel   = var.enable_icmp_tunnel
+  custom_pre_config    = var.custom_pre_config
+  custom_post_config   = var.custom_post_config
   alert_email          = var.alert_email
   https_proxy_password = var.https_proxy_password
   https_proxy_domain   = var.https_proxy_domain

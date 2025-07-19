@@ -50,3 +50,21 @@ variable "https_proxy_domain" {
   type        = string
   default     = ""
 }
+
+variable "enable_icmp_tunnel" {
+  description = "Whether to enable ICMP tunneling"
+  type        = bool
+  default     = false
+}
+
+variable "custom_pre_config" {
+  description = "Custom shell commands to run at the start of the startup script"
+  type        = string
+  default     = ""
+}
+
+variable "custom_post_config" {
+  description = "Custom shell commands to run at the end of the startup script"
+  type        = string
+  default     = ""
+}

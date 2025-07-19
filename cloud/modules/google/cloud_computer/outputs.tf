@@ -12,7 +12,13 @@ output "generated_ssh_private_key" {
 }
 
 output "vm_ip_address" {
-  value = google_compute_instance.free_tier_vm.network_interface[0].access_config[0].nat_ip
+  value       = google_compute_instance.free_tier_vm.network_interface[0].access_config[0].nat_ip
+  description = "The public IP address of the VM"
+}
+
+output "vm_fqdn" {
+  value       = format("%s.bc.googleusercontent.com", join(".", reverse(split(".", google_compute_instance.free_tier_vm.network_interface[0].access_config[0].nat_ip))))
+  description = "FQDN for the VM based on its IPv4 address"
 }
 
 output "dns_tunnel_password" {

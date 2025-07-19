@@ -68,6 +68,24 @@ variable "dns_tunnel_ip" {
   default     = "172.31.9.1"
 }
 
+variable "custom_pre_config" {
+  description = "Custom shell commands to run at the start of the cloud computer's startup script"
+  type        = string
+  default     = ""
+}
+
+variable "custom_post_config" {
+  description = "Custom shell commands to run at the end of the cloud computer's startup script"
+  type        = string
+  default     = ""
+}
+
+variable "enable_icmp_tunnel" {
+  description = "Whether to enable ICMP tunneling"
+  type        = bool
+  default     = false
+}
+
 variable "https_proxy_password" {
   description = "Password for the HTTPS proxy. If not specified, a random password will be generated"
   type        = string
