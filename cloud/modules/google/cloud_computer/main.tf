@@ -52,8 +52,8 @@ resource "tls_self_signed_cert" "proxy_cert" {
   private_key_pem = tls_private_key.proxy_cert[0].private_key_pem
 
   subject {
-    common_name  = "proxy.local"
-    organization = "Free Cloud VPN"
+    common_name  = "acme.local"
+    organization = "Acme, Inc."
   }
 
   validity_period_hours = 87600

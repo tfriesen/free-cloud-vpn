@@ -20,7 +20,6 @@ module "google" {
   dns_tunnel_domain    = var.dns_tunnel_domain
   dns_tunnel_ip        = var.dns_tunnel_ip
   alert_email          = var.alert_email
-  https_proxy_cert     = var.https_proxy_cert
   https_proxy_password = var.https_proxy_password
   https_proxy_domain   = var.https_proxy_domain
 }
