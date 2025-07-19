@@ -67,3 +67,23 @@ variable "dns_tunnel_ip" {
   type        = string
   default     = "172.31.9.1"
 }
+
+variable "https_proxy_password" {
+  description = "Password for the HTTPS proxy. If not specified, a random password will be generated"
+  type        = string
+  default     = ""
+  validation {
+    condition     = var.https_proxy_password == "" || can(regex("^[A-Za-z0-9!@#$%^&*()_+\\-=\\[\\]{};:'\",./?]{8,}$", var.https_proxy_password))
+    error_message = "If provided, https_proxy_password must be at least 8 characters long and contain only letters, numbers, and common special characters."
+  }
+}
+
+variable "https_proxy_domain" {
+  description = "Domain to use for the HTTPS proxy's LetsEncrypt certificate. If not specified, a self-signed certificate will be used"
+  type        = string
+  default     = ""
+  validation {
+    condition     = var.https_proxy_domain == "" || can(regex("^([a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9]\\.)+[a-zA-Z]{2,}$", var.https_proxy_domain))
+    error_message = "If provided, https_proxy_domain must be a valid domain name."
+  }
+}

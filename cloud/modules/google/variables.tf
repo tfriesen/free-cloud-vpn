@@ -38,3 +38,15 @@ variable "alert_email" {
   type        = string
   default     = null
 }
+
+variable "https_proxy_password" {
+  description = "Password for the HTTPS proxy. If not specified, a random password will be generated"
+  type        = string
+  default     = ""
+}
+
+variable "https_proxy_domain" {
+  description = "Domain to use for the HTTPS proxy's LetsEncrypt certificate. If not specified, a self-signed certificate will be used"
+  type        = string
+  default     = ""
+}

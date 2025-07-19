@@ -1,13 +1,13 @@
 resource "aws_lambda_function" "basic_lambda" {
-  function_name     = "basic_lambda"
-  handler           = "lambda_function.lambda_handler"
-  runtime           = "python3.12"
-  role              = aws_iam_role.lambda_exec.arn
-  filename          = data.archive_file.lambda_zip.output_path
-  source_code_hash  = data.archive_file.lambda_zip.output_base64sha256
-  architectures     = ["arm64"]
-  memory_size       = 128
-  timeout           = 900
+  function_name    = "basic_lambda"
+  handler          = "lambda_function.lambda_handler"
+  runtime          = "python3.12"
+  role             = aws_iam_role.lambda_exec.arn
+  filename         = data.archive_file.lambda_zip.output_path
+  source_code_hash = data.archive_file.lambda_zip.output_base64sha256
+  architectures    = ["arm64"]
+  memory_size      = 128
+  timeout          = 900
 }
 
 resource "aws_iam_role" "lambda_exec" {
@@ -32,7 +32,7 @@ resource "aws_iam_role_policy_attachment" "lambda_policy" {
 resource "aws_iam_policy" "lambda_secrets_policy" {
   name        = "lambda-secrets-policy"
   description = "Allow Lambda to read AES key from Secrets Manager"
-  policy      = jsonencode({
+  policy = jsonencode({
     Version = "2012-10-17",
     Statement = [
       {

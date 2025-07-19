@@ -3,7 +3,7 @@ output "generated_ssh_public_key" {
 }
 
 output "generated_ssh_private_key" {
-  value = module.cloud_computer.generated_ssh_private_key
+  value     = module.cloud_computer.generated_ssh_private_key
   sensitive = true
 }
 

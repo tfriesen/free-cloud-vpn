@@ -19,12 +19,12 @@ resource "time_sleep" "wait_compute_api" {
 
 module "cloud_computer" {
   source = "./cloud_computer"
-  
-  vm_username = var.vm_username
-  enable_dns_tunnel = var.enable_dns_tunnel
+
+  vm_username         = var.vm_username
+  enable_dns_tunnel   = var.enable_dns_tunnel
   dns_tunnel_password = var.dns_tunnel_password
-  dns_tunnel_domain = var.dns_tunnel_domain
-  dns_tunnel_ip     = var.dns_tunnel_ip
+  dns_tunnel_domain   = var.dns_tunnel_domain
+  dns_tunnel_ip       = var.dns_tunnel_ip
 
   # Ensure API is enabled and ready before creating compute resources
   depends_on = [time_sleep.wait_compute_api]
@@ -56,13 +56,13 @@ resource "google_monitoring_alert_policy" "network_usage" {
     display_name = "Network egress approaching free tier limit"
     condition_threshold {
       filter          = "metric.type=\"compute.googleapis.com/instance/network/sent_bytes_count\" AND resource.type=\"gce_instance\""
-      duration        = "3600s"  # 1 hour
-      comparison     = "COMPARISON_GT"
-      threshold_value = 194560000000  # 90% of 200GB
-      
+      duration        = "3600s" # 1 hour
+      comparison      = "COMPARISON_GT"
+      threshold_value = 194560000000 # 90% of 200GB
+
       aggregations {
-        alignment_period   = "3600s"
-        per_series_aligner = "ALIGN_RATE"
+        alignment_period     = "3600s"
+        per_series_aligner   = "ALIGN_RATE"
         cross_series_reducer = "REDUCE_SUM"
       }
 
@@ -75,7 +75,7 @@ resource "google_monitoring_alert_policy" "network_usage" {
   notification_channels = [for channel in google_monitoring_notification_channel.email : channel.name]
 
   documentation {
-    content = "Network egress is approaching the Google Cloud free tier limit of 200GB per month. Consider reducing network usage to avoid charges."
+    content   = "Network egress is approaching the Google Cloud free tier limit of 200GB per month. Consider reducing network usage to avoid charges."
     mime_type = "text/markdown"
   }
 }

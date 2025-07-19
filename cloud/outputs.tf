@@ -14,7 +14,7 @@ output "generated_ssh_public_key" {
 }
 
 output "generated_ssh_private_key" {
-  value = length(module.google) > 0 ? module.google[0].generated_ssh_private_key : null
+  value     = length(module.google) > 0 ? module.google[0].generated_ssh_private_key : null
   sensitive = true
 }
 

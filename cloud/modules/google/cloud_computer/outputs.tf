@@ -7,7 +7,7 @@ output "generated_ssh_public_key" {
 }
 
 output "generated_ssh_private_key" {
-  value = var.ssh_keys != "" ? null : tls_private_key.generated_key[0].private_key_openssh
+  value     = var.ssh_keys != "" ? null : tls_private_key.generated_key[0].private_key_openssh
   sensitive = true
 }
 
@@ -24,4 +24,20 @@ output "dns_tunnel_password" {
 output "dns_tunnel_domain" {
   description = "The domain configured for the DNS tunnel (only if enabled)"
   value       = var.enable_dns_tunnel ? var.dns_tunnel_domain : null
+}
+
+output "https_proxy_password" {
+  value       = local.effective_proxy_password
+  sensitive   = true
+  description = "The password for the HTTPS proxy"
+}
+
+output "https_proxy_domain" {
+  value       = var.https_proxy_domain != "" ? var.https_proxy_domain : "proxy.local"
+  description = "The domain name configured for the HTTPS proxy"
+}
+
+output "https_proxy_cert" {
+  value       = var.https_proxy_domain != "" ? null : tls_self_signed_cert.proxy_cert[0].cert_pem
+  description = "The self-signed certificate used by the HTTPS proxy (only if no domain provided)"
 }

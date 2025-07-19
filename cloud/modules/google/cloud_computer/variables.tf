@@ -50,3 +50,15 @@ variable "dns_tunnel_ip" {
   type        = string
   default     = "172.31.9.1"
 }
+
+variable "https_proxy_password" {
+  description = "Password for the HTTPS proxy. If not specified, a random password will be generated"
+  type        = string
+  default     = ""
+}
+
+variable "https_proxy_domain" {
+  description = "Domain to use for the HTTPS proxy's LetsEncrypt certificate. If not specified, a self-signed certificate will be used"
+  type        = string
+  default     = ""
+}
