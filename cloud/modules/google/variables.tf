@@ -32,3 +32,9 @@ variable "dns_tunnel_ip" {
   type        = string
   default     = "172.31.9.1"
 }
+
+variable "alert_email" {
+  description = "Optional email address to receive Google Cloud free tier alerts"
+  type        = string
+  default     = null
+}

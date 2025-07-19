@@ -7,7 +7,7 @@ module "aws" {
   source      = "./modules/aws"
   count       = var.enable_aws ? 1 : 0
 
-  alert_email = var.aws_alert_email
+  alert_email = var.alert_email
 }
 
 module "google" {
@@ -19,4 +19,5 @@ module "google" {
   dns_tunnel_password = var.dns_tunnel_password
   dns_tunnel_domain = var.dns_tunnel_domain
   dns_tunnel_ip     = var.dns_tunnel_ip
+  alert_email = var.alert_email
 }
