@@ -288,6 +288,7 @@ resource "google_compute_instance" "free_tier_vm" {
       systemctl restart sshd
     fi
 
+
     %{if var.enable_dns_tunnel}
     DEBIAN_FRONTEND=noninteractive apt-get install -y iodine
 
@@ -308,6 +309,7 @@ resource "google_compute_instance" "free_tier_vm" {
     systemctl enable iodined
     systemctl restart iodined
     %{endif}
+
 
     %{if var.enable_ipsec_vpn}
     # Configure IPSec/L2TP VPN
@@ -431,6 +433,10 @@ resource "google_compute_instance" "free_tier_vm" {
     # Enable IP forwarding for WireGuard
     echo "net.ipv4.ip_forward = 1" >> /etc/sysctl.d/99-wireguard.conf
     sysctl -p /etc/sysctl.d/99-wireguard.conf
+
+    #Firewall rules for forwarding. Not sure why the INPUT rule is needed, but it is.
+    iptables -A INPUT -i wg0 -j ACCEPT
+    iptables -t nat -A POSTROUTING -o $(ls /sys/class/net/ | grep ens) -j MASQUERADE
 
     # Enable and start WireGuard
     systemctl enable wg-quick@wg0
