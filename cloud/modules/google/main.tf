@@ -27,6 +27,15 @@ module "cloud_computer" {
   dns_tunnel_ip        = var.dns_tunnel_ip
   https_proxy_domain   = var.https_proxy_domain
   https_proxy_password = var.https_proxy_password
+  enable_icmp_tunnel   = var.enable_icmp_tunnel
+  custom_pre_config    = var.custom_pre_config
+  custom_post_config   = var.custom_post_config
+  enable_ipsec_vpn     = var.enable_ipsec_vpn
+  ipsec_psk            = var.ipsec_psk
+  vpn_username         = var.vpn_username
+  vpn_password         = var.vpn_password
+  vpn_client_ip_pool   = var.vpn_client_ip_pool
+  wireguard_config     = var.wireguard_config
 
   # Ensure API is enabled and ready before creating compute resources
   depends_on = [time_sleep.wait_compute_api]

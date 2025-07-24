@@ -39,3 +39,30 @@ output "https_proxy_cert" {
 output "vm_instance_name" {
   value = length(module.google) > 0 ? module.google[0].vm_instance_name : null
 }
+
+output "wireguard" {
+  description = "WireGuard VPN configuration and status"
+  value       = length(module.google) > 0 ? module.google[0].wireguard : null
+}
+
+output "vpn_username" {
+  value       = length(module.google) > 0 ? module.google[0].vpn_username : null
+  description = "The username for VPN authentication"
+}
+
+output "vpn_password" {
+  value       = length(module.google) > 0 ? module.google[0].vpn_password : null
+  description = "The auto-generated password for VPN authentication (only shown if auto-generated)"
+  sensitive   = true
+}
+
+output "ipsec_psk" {
+  value       = length(module.google) > 0 ? module.google[0].ipsec_psk : null
+  description = "The auto-generated IPSec pre-shared key (only shown if auto-generated)"
+  sensitive   = true
+}
+
+output "vpn_client_ip_pool" {
+  value       = length(module.google) > 0 ? module.google[0].vpn_client_ip_pool : null
+  description = "The IP address pool used for VPN clients"
+}

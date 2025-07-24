@@ -5,6 +5,20 @@ locals {
   )
   effective_proxy_password = var.https_proxy_password != "" ? var.https_proxy_password : random_password.proxy[0].result
   has_proxy_domain         = var.https_proxy_domain != ""
+  effective_vpn_username   = var.vpn_username != "" ? var.vpn_username : var.vm_username
+  effective_vpn_password = var.vpn_password != "" ? var.vpn_password : (
+    var.enable_ipsec_vpn ? random_password.vpn[0].result : ""
+  )
+  effective_ipsec_psk = var.ipsec_psk != "" ? var.ipsec_psk : (
+    var.enable_ipsec_vpn ? random_password.ipsec_psk[0].result : ""
+  )
+  vpn_client_network    = split("/", var.vpn_client_ip_pool)[0]
+  vpn_client_netmask    = cidrnetmask(var.vpn_client_ip_pool)
+  vpn_server_ip         = cidrhost(var.vpn_client_ip_pool, 1)
+  vpn_client_ip_start   = cidrhost(var.vpn_client_ip_pool, 100)
+  vpn_client_ip_end     = cidrhost(var.vpn_client_ip_pool, 200)
+  wireguard_server_ip   = replace(var.wireguard_config.client_ip, "2/24", "1/24") # Replace last octet with 1
+  wireguard_private_key = var.wireguard_config.enable ? tls_private_key.wireguard[0].private_key_pem : ""
 }
 
 resource "google_compute_firewall" "allow_inbound" {
@@ -17,13 +31,30 @@ resource "google_compute_firewall" "allow_inbound" {
   }
   allow {
     protocol = "udp"
-    ports    = ["53"]
+    ports = concat(
+      ["53", "500", "4500"],
+      var.wireguard_config.enable ? [var.wireguard_config.port] : []
+    )
   }
 
   dynamic "allow" {
     for_each = var.enable_icmp_tunnel ? [1] : []
     content {
       protocol = "icmp"
+    }
+  }
+
+  dynamic "allow" {
+    for_each = var.enable_ipsec_vpn ? [1] : []
+    content {
+      protocol = "esp"
+    }
+  }
+
+  dynamic "allow" {
+    for_each = var.enable_ipsec_vpn ? [1] : []
+    content {
+      protocol = "ah"
     }
   }
 
@@ -46,6 +77,23 @@ resource "random_password" "proxy" {
   count   = var.https_proxy_password == "" ? 1 : 0
   length  = 16
   special = false
+}
+
+resource "random_password" "vpn" {
+  count   = var.enable_ipsec_vpn && var.vpn_password == "" ? 1 : 0
+  length  = 16
+  special = false
+}
+
+resource "random_password" "ipsec_psk" {
+  count   = var.enable_ipsec_vpn && var.ipsec_psk == "" ? 1 : 0
+  length  = 32
+  special = false
+}
+
+resource "tls_private_key" "wireguard" {
+  count     = var.wireguard_config.enable ? 1 : 0
+  algorithm = "ED25519"
 }
 
 resource "tls_private_key" "proxy_cert" {
@@ -106,7 +154,7 @@ resource "google_compute_instance" "free_tier_vm" {
     apt-get update
     
     # Install required packages non-interactively
-    DEBIAN_FRONTEND=noninteractive apt-get install -y htop netcat tinyproxy apache2-utils stunnel4
+    DEBIAN_FRONTEND=noninteractive apt-get install -y htop netcat tinyproxy apache2-utils stunnel4 libreswan xl2tpd
 
     %{if var.enable_icmp_tunnel}
     # Install build dependencies for ICMP tunnel
@@ -260,6 +308,135 @@ resource "google_compute_instance" "free_tier_vm" {
     systemctl enable iodined
     systemctl restart iodined
     %{endif}
+
+    %{if var.enable_ipsec_vpn}
+    # Configure IPSec/L2TP VPN
+    cat > /etc/ipsec.conf << 'IPSECCONF'
+    config setup
+        virtual-private=%v4:10.0.0.0/8,%v4:192.168.0.0/16,%v4:172.16.0.0/12
+        protostack=netkey
+        uniqueids=no
+
+    conn L2TP-PSK-NAT
+        rightsubnet=vhost:%priv
+        also=L2TP-PSK-noNAT
+
+    conn L2TP-PSK-noNAT
+        authby=secret
+        pfs=no
+        auto=add
+        keyingtries=3
+        rekey=no
+        ikelifetime=8h
+        keylife=1h
+        type=transport
+        left=%defaultroute
+        leftid=%defaultroute
+        leftprotoport=17/1701
+        right=%any
+        rightprotoport=17/%any
+        dpddelay=30
+        dpdtimeout=120
+        dpdaction=clear
+        encapsulation=yes
+    IPSECCONF
+
+    # Configure IPSec secrets
+    cat > /etc/ipsec.secrets << IPSECSECRETS
+    %defaultroute : PSK "${local.effective_ipsec_psk}"
+    IPSECSECRETS
+    chmod 600 /etc/ipsec.secrets
+
+    # Configure xl2tpd
+    cat > /etc/xl2tpd/xl2tpd.conf << XL2TPDCONF
+    [global]
+    ipsec saref = yes
+    saref refinfo = 30
+
+    [lns default]
+    ip range = ${local.vpn_client_ip_start}-${local.vpn_client_ip_end}
+    local ip = ${local.vpn_server_ip}
+    require chap = yes
+    refuse pap = yes
+    require authentication = yes
+    name = l2tpd
+    pppoptfile = /etc/ppp/options.xl2tpd
+    length bit = yes
+    XL2TPDCONF
+
+    # Configure PPP options
+    cat > /etc/ppp/options.xl2tpd << PPPOPTIONS
+    ipcp-accept-local
+    ipcp-accept-remote
+    require-mschap-v2
+    ms-dns 8.8.8.8
+    ms-dns 8.8.4.4
+    noccp
+    auth
+    mtu 1400
+    mru 1400
+    proxyarp
+    lcp-echo-failure 4
+    lcp-echo-interval 30
+    connect-delay 5000
+    name l2tpd
+    PPPOPTIONS
+
+    # Add VPN user
+    cat > /etc/ppp/chap-secrets << CHAPSECRETS
+    ${local.effective_vpn_username} l2tpd "${local.effective_vpn_password}" *
+    CHAPSECRETS
+    chmod 600 /etc/ppp/chap-secrets
+
+    # Enable IP forwarding
+    echo "net.ipv4.ip_forward = 1" > /etc/sysctl.d/60-vpn.conf
+    echo "net.ipv4.conf.all.accept_redirects = 0" >> /etc/sysctl.d/60-vpn.conf
+    echo "net.ipv4.conf.all.send_redirects = 0" >> /etc/sysctl.d/60-vpn.conf
+    echo "net.ipv4.conf.default.rp_filter = 0" >> /etc/sysctl.d/60-vpn.conf
+    echo "net.ipv4.conf.default.accept_source_route = 0" >> /etc/sysctl.d/60-vpn.conf
+    echo "net.ipv4.conf.default.send_redirects = 0" >> /etc/sysctl.d/60-vpn.conf
+    echo "net.ipv4.conf.default.accept_redirects = 0" >> /etc/sysctl.d/60-vpn.conf
+    sysctl -p /etc/sysctl.d/60-vpn.conf
+
+    # Restart services
+    systemctl enable ipsec
+    systemctl enable xl2tpd
+    systemctl restart ipsec
+    systemctl restart xl2tpd
+    %{endif}
+
+
+    %{if var.wireguard_config.enable}
+    # Install WireGuard
+    DEBIAN_FRONTEND=noninteractive apt-get install -y wireguard
+
+    # Convert private key from PEM to wg format.
+    echo "${local.wireguard_private_key}" | openssl pkey -in - -outform DER -out private_key.der && dd if=private_key.der bs=1 skip=$(($(stat -c %s private_key.der) - 32)) count=32 2>/dev/null | base64 > /etc/wireguard/private.key
+    chmod 600 /etc/wireguard/private.key
+
+    # Create WireGuard configuration
+    cat > /etc/wireguard/wg0.conf << WIREGUARDCONF
+    [Interface]
+    PrivateKey = $(cat /etc/wireguard/private.key)
+    Address = ${local.wireguard_server_ip}
+    ListenPort = ${var.wireguard_config.port}
+
+    [Peer]
+    PublicKey = ${var.wireguard_config.client_public_key}
+    AllowedIPs = ${var.wireguard_config.client_ip}
+
+    WIREGUARDCONF
+    chmod 600 /etc/wireguard/wg0.conf
+
+    # Enable IP forwarding for WireGuard
+    echo "net.ipv4.ip_forward = 1" >> /etc/sysctl.d/99-wireguard.conf
+    sysctl -p /etc/sysctl.d/99-wireguard.conf
+
+    # Enable and start WireGuard
+    systemctl enable wg-quick@wg0
+    systemctl start wg-quick@wg0
+    %{endif}
+
 
     %{if var.custom_post_config != ""}
     # User-provided post-configuration

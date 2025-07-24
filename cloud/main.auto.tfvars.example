@@ -8,3 +8,8 @@ https_proxy_password = "password456"
 
 #example using Hurricane Electric's dynamic DNS service to set the VPN host's DNS record
 custom_pre_config    = "curl https://dyn.dns.he.net/nic/update?hostname=vpn.mydomain.com&password=password123"
+
+wireguard_config = {
+  enable              = true
+  client_public_key   = "your_pubkey_here"
+}

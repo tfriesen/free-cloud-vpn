@@ -47,3 +47,45 @@ output "https_proxy_cert" {
   value       = var.https_proxy_domain != "" ? null : tls_self_signed_cert.proxy_cert[0].cert_pem
   description = "The self-signed certificate used by the HTTPS proxy (only if no domain provided)"
 }
+
+output "vpn_username" {
+  value       = var.enable_ipsec_vpn ? local.effective_vpn_username : null
+  description = "The username for VPN authentication"
+}
+
+output "vpn_password" {
+  value       = var.enable_ipsec_vpn && var.vpn_password == "" ? local.effective_vpn_password : null
+  description = "The auto-generated password for VPN authentication (only shown if auto-generated)"
+  sensitive   = true
+}
+
+output "ipsec_psk" {
+  value       = var.enable_ipsec_vpn && var.ipsec_psk == "" ? local.effective_ipsec_psk : null
+  description = "The auto-generated IPSec pre-shared key (only shown if auto-generated)"
+  sensitive   = true
+}
+
+output "vpn_client_ip_pool" {
+  value       = var.enable_ipsec_vpn ? var.vpn_client_ip_pool : null
+  description = "The IP address pool used for VPN clients"
+}
+
+output "wireguard" {
+  description = "WireGuard VPN configuration and status"
+  value = {
+    enabled    = var.wireguard_config.enable
+    public_key = var.wireguard_config.enable ? tls_private_key.wireguard[0].public_key_pem : null
+    port       = var.wireguard_config.enable ? var.wireguard_config.port : null
+    server_ip  = var.wireguard_config.enable ? local.wireguard_server_ip : null
+    client_config = var.wireguard_config.enable ? templatefile(
+      "${path.module}/templates/wireguard-client.conf.tpl",
+      {
+        client_ip     = var.wireguard_config.client_ip
+        server_pubkey = tls_private_key.wireguard[0].public_key_pem
+        server_port   = var.wireguard_config.port
+        server_ip     = google_compute_instance.free_tier_vm.network_interface[0].access_config[0].nat_ip
+        allowed_ips   = var.wireguard_config.client_allowed_ips
+      }
+    ) : null
+  }
+}

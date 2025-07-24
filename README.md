@@ -15,6 +15,8 @@ Automatically sets up a free-tier VM in Google Cloud. This VM has 2 vCPU cores a
 3. HTTPS proxy on TCP/443. Specify a cert or generate a self-signed one. (Letsencrypt support coming, probably!)
 4. DNS tunnel (DNS config must be completed externally. Kinda flaky, still in search of good relays)
 5. ICMP tunnel (flaky, needs more testing, and not encrypted. Flakieness might be due to WSL, though)
+6. Wireguard. Generate a client key and pass it in.
+7. IPSec/L2TP (broken at the moment, and not sure why)
 
 ### Limits
 
