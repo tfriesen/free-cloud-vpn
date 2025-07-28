@@ -74,14 +74,14 @@ output "wireguard" {
   description = "WireGuard VPN configuration and status"
   value = {
     enabled    = var.wireguard_config.enable
-    public_key = var.wireguard_config.enable ? tls_private_key.wireguard[0].public_key_pem : null
+    public_key = coalesce(var.wireguard_config.enable ? data.google_compute_instance_guest_attributes.wg_public_key[0].variable_value : null, "There was an error retrieving the public key. It can be retrieved by logging into the VM in the file at '/etc/wireguard/public.key'. Sometimes re-running 'plan' or 'apply' can resolve this.")
     port       = var.wireguard_config.enable ? var.wireguard_config.port : null
     server_ip  = var.wireguard_config.enable ? local.wireguard_server_ip : null
     client_config = var.wireguard_config.enable ? templatefile(
       "${path.module}/templates/wireguard-client.conf.tpl",
       {
         client_ip     = var.wireguard_config.client_ip
-        server_pubkey = tls_private_key.wireguard[0].public_key_pem
+        server_pubkey = coalesce(data.google_compute_instance_guest_attributes.wg_public_key[0].variable_value, "There was an error retrieving the public key. It can be retrieved by logging into the VM in the file at `/etc/wireguard/public.key`")
         server_port   = var.wireguard_config.port
         server_ip     = google_compute_instance.free_tier_vm.network_interface[0].access_config[0].nat_ip
         allowed_ips   = var.wireguard_config.client_allowed_ips

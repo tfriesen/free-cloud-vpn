@@ -19,6 +19,9 @@ locals {
   vpn_client_ip_end     = cidrhost(var.vpn_client_ip_pool, 200)
   wireguard_server_ip   = replace(var.wireguard_config.client_ip, "2/24", "1/24") # Replace last octet with 1
   wireguard_private_key = var.wireguard_config.enable ? tls_private_key.wireguard[0].private_key_pem : ""
+
+  vm_guest_attr_namespace = "free-tier-vm-guestattr-namespace"
+  wg_pubkey_attr_key      = "wireguard-public-key"
 }
 
 resource "google_compute_firewall" "allow_inbound" {
@@ -118,6 +121,26 @@ resource "tls_self_signed_cert" "proxy_cert" {
   ]
 }
 
+# Create a service account for the VM
+resource "google_service_account" "vm_service_account" {
+  account_id   = "free-tier-vm-sa"
+  display_name = "Service Account for Free Tier VM"
+  description  = "Minimal service account for the free tier VM instance"
+}
+
+# Grant minimal required permissions
+resource "google_project_iam_member" "instance_log_writer" {
+  project = google_compute_instance.free_tier_vm.project
+  role    = "roles/logging.logWriter"
+  member  = "serviceAccount:${google_service_account.vm_service_account.email}"
+}
+
+resource "google_project_iam_member" "instance_metric_writer" {
+  project = google_compute_instance.free_tier_vm.project
+  role    = "roles/monitoring.metricWriter"
+  member  = "serviceAccount:${google_service_account.vm_service_account.email}"
+}
+
 resource "google_compute_instance" "free_tier_vm" {
   name         = "free-tier-vm"
   machine_type = "e2-micro"
@@ -141,6 +164,12 @@ resource "google_compute_instance" "free_tier_vm" {
 
   tags = ["http-server", "https-server"]
 
+  # Use the custom service account
+  service_account {
+    email  = google_service_account.vm_service_account.email
+    scopes = ["cloud-platform"]
+  }
+
   metadata_startup_script = <<-EOF
     #!/bin/bash
     
@@ -155,6 +184,47 @@ resource "google_compute_instance" "free_tier_vm" {
     
     # Install required packages non-interactively
     DEBIAN_FRONTEND=noninteractive apt-get install -y htop netcat tinyproxy apache2-utils stunnel4 libreswan xl2tpd
+
+
+    #We do wireguard first so that the public key is available for the guest attributes ASAP
+    %{if var.wireguard_config.enable}
+    # Install WireGuard
+    DEBIAN_FRONTEND=noninteractive apt-get install -y wireguard
+
+    # Convert private key from PEM to wg format.
+    echo "${local.wireguard_private_key}" | openssl pkey -in - -outform DER -out private_key.der && dd if=private_key.der bs=1 skip=$(($(stat -c %s private_key.der) - 32)) count=32 2>/dev/null | base64 > /etc/wireguard/private.key
+    wg pubkey < /etc/wireguard/private.key > /etc/wireguard/public.key
+    chmod 600 /etc/wireguard/private.key
+
+    curl -X PUT -H "Metadata-Flavor: Google" --data "$(cat /etc/wireguard/public.key)" http://metadata.google.internal/computeMetadata/v1/instance/guest-attributes/${local.vm_guest_attr_namespace}/${local.wg_pubkey_attr_key} 
+
+    # Create WireGuard configuration
+    cat > /etc/wireguard/wg0.conf << WIREGUARDCONF
+    [Interface]
+    PrivateKey = $(cat /etc/wireguard/private.key)
+    Address = ${local.wireguard_server_ip}
+    ListenPort = ${var.wireguard_config.port}
+
+    [Peer]
+    PublicKey = ${var.wireguard_config.client_public_key}
+    AllowedIPs = ${var.wireguard_config.client_ip}
+
+    WIREGUARDCONF
+    chmod 600 /etc/wireguard/wg0.conf
+
+    # Enable IP forwarding for WireGuard
+    echo "net.ipv4.ip_forward = 1" >> /etc/sysctl.d/99-wireguard.conf
+    sysctl -p /etc/sysctl.d/99-wireguard.conf
+
+    #Firewall rules for forwarding. Not sure why the INPUT rule is needed, but it is.
+    iptables -A INPUT -i wg0 -j ACCEPT
+    iptables -t nat -A POSTROUTING -o $(ls /sys/class/net/ | grep ens) -j MASQUERADE
+
+    # Enable and start WireGuard
+    systemctl enable wg-quick@wg0
+    systemctl start wg-quick@wg0
+    %{endif}
+
 
     %{if var.enable_icmp_tunnel}
     # Install build dependencies for ICMP tunnel
@@ -408,42 +478,6 @@ resource "google_compute_instance" "free_tier_vm" {
     %{endif}
 
 
-    %{if var.wireguard_config.enable}
-    # Install WireGuard
-    DEBIAN_FRONTEND=noninteractive apt-get install -y wireguard
-
-    # Convert private key from PEM to wg format.
-    echo "${local.wireguard_private_key}" | openssl pkey -in - -outform DER -out private_key.der && dd if=private_key.der bs=1 skip=$(($(stat -c %s private_key.der) - 32)) count=32 2>/dev/null | base64 > /etc/wireguard/private.key
-    chmod 600 /etc/wireguard/private.key
-
-    # Create WireGuard configuration
-    cat > /etc/wireguard/wg0.conf << WIREGUARDCONF
-    [Interface]
-    PrivateKey = $(cat /etc/wireguard/private.key)
-    Address = ${local.wireguard_server_ip}
-    ListenPort = ${var.wireguard_config.port}
-
-    [Peer]
-    PublicKey = ${var.wireguard_config.client_public_key}
-    AllowedIPs = ${var.wireguard_config.client_ip}
-
-    WIREGUARDCONF
-    chmod 600 /etc/wireguard/wg0.conf
-
-    # Enable IP forwarding for WireGuard
-    echo "net.ipv4.ip_forward = 1" >> /etc/sysctl.d/99-wireguard.conf
-    sysctl -p /etc/sysctl.d/99-wireguard.conf
-
-    #Firewall rules for forwarding. Not sure why the INPUT rule is needed, but it is.
-    iptables -A INPUT -i wg0 -j ACCEPT
-    iptables -t nat -A POSTROUTING -o $(ls /sys/class/net/ | grep ens) -j MASQUERADE
-
-    # Enable and start WireGuard
-    systemctl enable wg-quick@wg0
-    systemctl start wg-quick@wg0
-    %{endif}
-
-
     %{if var.custom_post_config != ""}
     # User-provided post-configuration
     ${var.custom_post_config}
@@ -451,7 +485,34 @@ resource "google_compute_instance" "free_tier_vm" {
   EOF
 
   metadata = {
-    ssh-keys = "${var.vm_username}:${local.effective_ssh_key}"
+    enable-guest-attributes = "true"
+    ssh-keys                = "${var.vm_username}:${local.effective_ssh_key}"
   }
 }
 
+resource "time_sleep" "wait_for_instance" {
+  count           = var.wireguard_config.enable ? 1 : 0
+  create_duration = "30s" #minimum time for the instance to be ready
+  depends_on = [
+    google_compute_instance.free_tier_vm
+  ]
+  lifecycle {
+    # Ensure this resource is recreated if the instance is replaced
+    # This is necessary to ensure the guest attributes are fetched after the instance is ready
+    replace_triggered_by = [
+      google_compute_instance.free_tier_vm
+    ]
+  }
+}
+
+data "google_compute_instance_guest_attributes" "wg_public_key" {
+  count        = var.wireguard_config.enable ? 1 : 0
+  name         = google_compute_instance.free_tier_vm.name
+  zone         = var.zone
+  variable_key = "${local.vm_guest_attr_namespace}/${local.wg_pubkey_attr_key}"
+
+  #make sure this runs after the instance is configured
+  depends_on = [
+    time_sleep.wait_for_instance
+  ]
+}
