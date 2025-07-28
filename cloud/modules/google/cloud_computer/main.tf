@@ -1,7 +1,7 @@
 locals {
   effective_ssh_key = var.ssh_keys != "" ? var.ssh_keys : "${chomp(tls_private_key.generated_key[0].public_key_openssh)} ${var.vm_username}"
   effective_dns_password = var.dns_tunnel_password != "" ? var.dns_tunnel_password : (
-    var.enable_dns_tunnel ? random_password.dns_tunnel[0].result : ""
+    var.dns_tunnel_config.enable ? random_password.dns_tunnel[0].result : ""
   )
   effective_proxy_password = var.https_proxy_password != "" ? var.https_proxy_password : random_password.proxy[0].result
   has_proxy_domain         = var.https_proxy_domain != ""
@@ -71,7 +71,7 @@ resource "tls_private_key" "generated_key" {
 }
 
 resource "random_password" "dns_tunnel" {
-  count   = var.enable_dns_tunnel && var.dns_tunnel_password == "" ? 1 : 0
+  count   = var.dns_tunnel_config.enable && var.dns_tunnel_password == "" ? 1 : 0
   length  = 16
   special = false
 }
@@ -359,7 +359,7 @@ resource "google_compute_instance" "free_tier_vm" {
     fi
 
 
-    %{if var.enable_dns_tunnel}
+    %{if var.dns_tunnel_config.enable}
     DEBIAN_FRONTEND=noninteractive apt-get install -y iodine
 
     # Configure iodine DNS tunnel
@@ -371,7 +371,7 @@ resource "google_compute_instance" "free_tier_vm" {
     IODINED_PASSWORD="${local.effective_dns_password}"
 
     # Additional options
-    IODINED_ARGS="-c ${var.dns_tunnel_ip} ${var.dns_tunnel_domain}"
+    IODINED_ARGS="-c ${var.dns_tunnel_config.server_ip} ${var.dns_tunnel_config.domain}"
     IODINECONF
 
     chmod 600 /etc/default/iodine

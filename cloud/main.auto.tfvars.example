@@ -1,13 +1,18 @@
 #see variables.tf for details and other options
 alert_email          = "myemail@gmail.com"
-dns_tunnel_domain    = "mydomain.com"
-dns_tunnel_password  = "password456"
 emable_azure         = false
 enable_icmp_tunnel   = false
 https_proxy_password = "password456"
 
 #example using Hurricane Electric's dynamic DNS service to set the VPN host's DNS record
 custom_pre_config    = "curl https://dyn.dns.he.net/nic/update?hostname=vpn.mydomain.com&password=password123"
+
+dns_tunnel_config = {
+  enable = true
+  domain = "mydomain.com"
+}
+
+dns_tunnel_password  = "password456"
 
 wireguard_config = {
   enable              = true

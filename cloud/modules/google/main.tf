@@ -21,10 +21,8 @@ module "cloud_computer" {
   source = "./cloud_computer"
 
   vm_username          = var.vm_username
-  enable_dns_tunnel    = var.enable_dns_tunnel
+  dns_tunnel_config    = var.dns_tunnel_config
   dns_tunnel_password  = var.dns_tunnel_password
-  dns_tunnel_domain    = var.dns_tunnel_domain
-  dns_tunnel_ip        = var.dns_tunnel_ip
   https_proxy_domain   = var.https_proxy_domain
   https_proxy_password = var.https_proxy_password
   enable_icmp_tunnel   = var.enable_icmp_tunnel

@@ -31,6 +31,12 @@ output "aws_lambda_url" {
   value       = length(module.aws) > 0 ? module.aws[0].lambda_function_url : null
 }
 
+output "dns_tunnel_password" {
+  description = "The password for the DNS tunnel (only if enabled and auto-generated)"
+  value       = length(module.google) > 0 ? module.google[0].dns_tunnel_password : null
+  sensitive   = true
+}
+
 output "https_proxy_cert" {
   value       = length(module.google) > 0 ? module.google[0].https_proxy_cert : null
   description = "The self-signed certificate used by the HTTPS proxy (only if no domain provided)"
@@ -42,12 +48,12 @@ output "vm_instance_name" {
 
 output "wireguard" {
   description = "WireGuard VPN configuration and status"
-  value       = length(module.google) > 0 ? module.google[0].wireguard : null
+  value       = length(module.google) > 0 && var.wireguard_config.enable ? module.google[0].wireguard : null
 }
 
 output "ipsec_vpn" {
   description = "IPSec/L2TP VPN configuration and status"
-  value       = length(module.google) > 0 ? module.google[0].ipsec_vpn : null
+  value       = length(module.google) > 0 && var.ipsec_vpn_config.enable ? module.google[0].ipsec_vpn : null
 }
 
 output "ipsec_vpn_secrets" {

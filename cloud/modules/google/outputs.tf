@@ -19,6 +19,12 @@ output "vm_fqdn" {
   value = module.cloud_computer.vm_fqdn
 }
 
+output "dns_tunnel_password" {
+  description = "The password for the DNS tunnel (only if enabled and auto-generated)"
+  value       = module.cloud_computer.dns_tunnel_password
+  sensitive   = true
+}
+
 output "https_proxy_cert" {
   value       = module.cloud_computer.https_proxy_cert
   description = "The self-signed certificate used by the HTTPS proxy (only if no domain provided)"

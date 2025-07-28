@@ -15,10 +15,8 @@ module "google" {
   count  = var.enable_google ? 1 : 0
 
   vm_username          = var.gcp_vm_username
-  enable_dns_tunnel    = var.enable_dns_tunnel
+  dns_tunnel_config    = var.dns_tunnel_config
   dns_tunnel_password  = var.dns_tunnel_password
-  dns_tunnel_domain    = var.dns_tunnel_domain
-  dns_tunnel_ip        = var.dns_tunnel_ip
   enable_icmp_tunnel   = var.enable_icmp_tunnel
   custom_pre_config    = var.custom_pre_config
   custom_post_config   = var.custom_post_config
