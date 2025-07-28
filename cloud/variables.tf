@@ -106,36 +106,42 @@ variable "https_proxy_domain" {
   }
 }
 
-variable "enable_ipsec_vpn" {
-  description = "Whether to enable IPSec/L2TP VPN"
-  type        = bool
-  default     = true
+variable "ipsec_vpn_config" {
+  description = "Configuration for IPSec/L2TP VPN"
+  type = object({
+    enable         = optional(bool, true)
+    username       = optional(string, "")
+    client_ip_pool = optional(string, "172.31.10.0/24")
+  })
+  default = {
+    enable = false
+  }
+  validation {
+    condition     = var.ipsec_vpn_config.username == "" || can(regex("^[a-z][-a-z0-9]*$", var.ipsec_vpn_config.username))
+    error_message = "If provided, username must start with a letter and can only contain lowercase letters, numbers, and hyphens."
+  }
+  validation {
+    condition     = can(cidrhost(var.ipsec_vpn_config.client_ip_pool, 0))
+    error_message = "client_ip_pool must be a valid CIDR range"
+  }
 }
 
-variable "ipsec_psk" {
-  description = "Pre-shared key for IPSec VPN. If not specified, a random key will be generated"
-  type        = string
-  default     = ""
-  sensitive   = true
-}
-
-variable "vpn_username" {
-  description = "Username for VPN authentication. If not specified, defaults to vm_username"
-  type        = string
-  default     = ""
-}
-
-variable "vpn_password" {
-  description = "Password for VPN authentication. If not specified, a random password will be generated"
-  type        = string
-  default     = ""
-  sensitive   = true
-}
-
-variable "vpn_client_ip_pool" {
-  description = "IP address pool for VPN clients"
-  type        = string
-  default     = "172.31.10.0/24"
+variable "ipsec_vpn_secrets" {
+  description = "Sensitive configuration values for IPSec/L2TP VPN"
+  type = object({
+    psk      = optional(string, "")
+    password = optional(string, "")
+  })
+  default   = {}
+  sensitive = true
+  validation {
+    condition     = var.ipsec_vpn_secrets.psk == "" || can(regex("^[A-Za-z0-9!@#$%^&*()_+\\-=\\[\\]{};:'\",./?]{16,}$", var.ipsec_vpn_secrets.psk))
+    error_message = "If provided, psk must be at least 16 characters long and contain only letters, numbers, and common special characters."
+  }
+  validation {
+    condition     = var.ipsec_vpn_secrets.password == "" || can(regex("^[A-Za-z0-9!@#$%^&*()_+\\-=\\[\\]{};:'\",./?]{8,}$", var.ipsec_vpn_secrets.password))
+    error_message = "If provided, password must be at least 8 characters long and contain only letters, numbers, and common special characters."
+  }
 }
 
 variable "wireguard_config" {

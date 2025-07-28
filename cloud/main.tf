@@ -25,10 +25,7 @@ module "google" {
   alert_email          = var.alert_email
   https_proxy_password = var.https_proxy_password
   https_proxy_domain   = var.https_proxy_domain
-  enable_ipsec_vpn     = var.enable_ipsec_vpn
-  ipsec_psk            = var.ipsec_psk
-  vpn_username         = var.vpn_username
-  vpn_password         = var.vpn_password
-  vpn_client_ip_pool   = var.vpn_client_ip_pool
+  ipsec_vpn_config     = var.ipsec_vpn_config
+  ipsec_vpn_secrets    = var.ipsec_vpn_secrets
   wireguard_config     = var.wireguard_config
 }

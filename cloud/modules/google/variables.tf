@@ -69,36 +69,31 @@ variable "custom_post_config" {
   default     = ""
 }
 
-variable "enable_ipsec_vpn" {
-  description = "Whether to enable IPSec/L2TP VPN"
-  type        = bool
-  default     = true
+variable "ipsec_vpn_config" {
+  description = "Configuration for IPSec/L2TP VPN"
+  type = object({
+    enable         = bool
+    username       = string
+    client_ip_pool = string
+  })
+  default = {
+    enable         = true
+    username       = ""
+    client_ip_pool = "172.31.10.0/24"
+  }
 }
 
-variable "ipsec_psk" {
-  description = "Pre-shared key for IPSec VPN. If not specified, a random key will be generated"
-  type        = string
-  default     = ""
-  sensitive   = true
-}
-
-variable "vpn_username" {
-  description = "Username for VPN authentication. If not specified, defaults to vm_username"
-  type        = string
-  default     = ""
-}
-
-variable "vpn_password" {
-  description = "Password for VPN authentication. If not specified, a random password will be generated"
-  type        = string
-  default     = ""
-  sensitive   = true
-}
-
-variable "vpn_client_ip_pool" {
-  description = "IP address pool for VPN clients"
-  type        = string
-  default     = "172.31.10.0/24"
+variable "ipsec_vpn_secrets" {
+  description = "Sensitive configuration values for IPSec/L2TP VPN"
+  type = object({
+    psk      = string
+    password = string
+  })
+  default = {
+    psk      = ""
+    password = ""
+  }
+  sensitive = true
 }
 
 variable "wireguard_config" {

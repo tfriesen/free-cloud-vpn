@@ -29,24 +29,13 @@ output "wireguard" {
   value       = module.cloud_computer.wireguard
 }
 
-output "vpn_username" {
-  value       = module.cloud_computer.vpn_username
-  description = "The username for VPN authentication"
+output "ipsec_vpn" {
+  description = "IPSec/L2TP VPN configuration and status"
+  value       = module.cloud_computer.ipsec_vpn
 }
 
-output "vpn_password" {
-  value       = module.cloud_computer.vpn_password
-  description = "The auto-generated password for VPN authentication (only shown if auto-generated)"
+output "ipsec_vpn_secrets" {
+  description = "IPSec/L2TP VPN sensitive configuration values"
+  value       = module.cloud_computer.ipsec_vpn_secrets
   sensitive   = true
-}
-
-output "ipsec_psk" {
-  value       = module.cloud_computer.ipsec_psk
-  description = "The auto-generated IPSec pre-shared key (only shown if auto-generated)"
-  sensitive   = true
-}
-
-output "vpn_client_ip_pool" {
-  value       = module.cloud_computer.vpn_client_ip_pool
-  description = "The IP address pool used for VPN clients"
 }

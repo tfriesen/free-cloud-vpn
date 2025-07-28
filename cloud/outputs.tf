@@ -45,24 +45,13 @@ output "wireguard" {
   value       = length(module.google) > 0 ? module.google[0].wireguard : null
 }
 
-output "vpn_username" {
-  value       = length(module.google) > 0 ? module.google[0].vpn_username : null
-  description = "The username for VPN authentication"
+output "ipsec_vpn" {
+  description = "IPSec/L2TP VPN configuration and status"
+  value       = length(module.google) > 0 ? module.google[0].ipsec_vpn : null
 }
 
-output "vpn_password" {
-  value       = length(module.google) > 0 ? module.google[0].vpn_password : null
-  description = "The auto-generated password for VPN authentication (only shown if auto-generated)"
+output "ipsec_vpn_secrets" {
+  description = "IPSec/L2TP VPN sensitive configuration values"
+  value       = length(module.google) > 0 ? module.google[0].ipsec_vpn_secrets : null
   sensitive   = true
-}
-
-output "ipsec_psk" {
-  value       = length(module.google) > 0 ? module.google[0].ipsec_psk : null
-  description = "The auto-generated IPSec pre-shared key (only shown if auto-generated)"
-  sensitive   = true
-}
-
-output "vpn_client_ip_pool" {
-  value       = length(module.google) > 0 ? module.google[0].vpn_client_ip_pool : null
-  description = "The IP address pool used for VPN clients"
 }

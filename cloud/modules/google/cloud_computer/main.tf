@@ -5,18 +5,18 @@ locals {
   )
   effective_proxy_password = var.https_proxy_password != "" ? var.https_proxy_password : random_password.proxy[0].result
   has_proxy_domain         = var.https_proxy_domain != ""
-  effective_vpn_username   = var.vpn_username != "" ? var.vpn_username : var.vm_username
-  effective_vpn_password = var.vpn_password != "" ? var.vpn_password : (
-    var.enable_ipsec_vpn ? random_password.vpn[0].result : ""
+  effective_vpn_username   = var.ipsec_vpn_config.username != "" ? var.ipsec_vpn_config.username : var.vm_username
+  effective_vpn_password = var.ipsec_vpn_secrets.password != "" ? var.ipsec_vpn_secrets.password : (
+    var.ipsec_vpn_config.enable ? random_password.vpn[0].result : ""
   )
-  effective_ipsec_psk = var.ipsec_psk != "" ? var.ipsec_psk : (
-    var.enable_ipsec_vpn ? random_password.ipsec_psk[0].result : ""
+  effective_ipsec_psk = var.ipsec_vpn_secrets.psk != "" ? var.ipsec_vpn_secrets.psk : (
+    var.ipsec_vpn_config.enable ? random_password.ipsec_psk[0].result : ""
   )
-  vpn_client_network    = split("/", var.vpn_client_ip_pool)[0]
-  vpn_client_netmask    = cidrnetmask(var.vpn_client_ip_pool)
-  vpn_server_ip         = cidrhost(var.vpn_client_ip_pool, 1)
-  vpn_client_ip_start   = cidrhost(var.vpn_client_ip_pool, 100)
-  vpn_client_ip_end     = cidrhost(var.vpn_client_ip_pool, 200)
+  vpn_client_network    = split("/", var.ipsec_vpn_config.client_ip_pool)[0]
+  vpn_client_netmask    = cidrnetmask(var.ipsec_vpn_config.client_ip_pool)
+  vpn_server_ip         = cidrhost(var.ipsec_vpn_config.client_ip_pool, 1)
+  vpn_client_ip_start   = cidrhost(var.ipsec_vpn_config.client_ip_pool, 100)
+  vpn_client_ip_end     = cidrhost(var.ipsec_vpn_config.client_ip_pool, 200)
   wireguard_server_ip   = replace(var.wireguard_config.client_ip, "2/24", "1/24") # Replace last octet with 1
   wireguard_private_key = var.wireguard_config.enable ? tls_private_key.wireguard[0].private_key_pem : ""
 
@@ -48,14 +48,14 @@ resource "google_compute_firewall" "allow_inbound" {
   }
 
   dynamic "allow" {
-    for_each = var.enable_ipsec_vpn ? [1] : []
+    for_each = var.ipsec_vpn_config.enable ? [1] : []
     content {
       protocol = "esp"
     }
   }
 
   dynamic "allow" {
-    for_each = var.enable_ipsec_vpn ? [1] : []
+    for_each = var.ipsec_vpn_config.enable ? [1] : []
     content {
       protocol = "ah"
     }
@@ -83,13 +83,13 @@ resource "random_password" "proxy" {
 }
 
 resource "random_password" "vpn" {
-  count   = var.enable_ipsec_vpn && var.vpn_password == "" ? 1 : 0
+  count   = var.ipsec_vpn_config.enable && var.ipsec_vpn_secrets.password == "" ? 1 : 0
   length  = 16
   special = false
 }
 
 resource "random_password" "ipsec_psk" {
-  count   = var.enable_ipsec_vpn && var.ipsec_psk == "" ? 1 : 0
+  count   = var.ipsec_vpn_config.enable && var.ipsec_vpn_secrets.psk == "" ? 1 : 0
   length  = 32
   special = false
 }
@@ -381,7 +381,7 @@ resource "google_compute_instance" "free_tier_vm" {
     %{endif}
 
 
-    %{if var.enable_ipsec_vpn}
+    %{if var.ipsec_vpn_config.enable}
     # Configure IPSec/L2TP VPN
     cat > /etc/ipsec.conf << 'IPSECCONF'
     config setup

@@ -48,26 +48,23 @@ output "https_proxy_cert" {
   description = "The self-signed certificate used by the HTTPS proxy (only if no domain provided)"
 }
 
-output "vpn_username" {
-  value       = var.enable_ipsec_vpn ? local.effective_vpn_username : null
-  description = "The username for VPN authentication"
+output "ipsec_vpn" {
+  description = "IPSec/L2TP VPN configuration and status"
+  value = {
+    enabled        = var.ipsec_vpn_config.enable
+    username       = var.ipsec_vpn_config.enable ? local.effective_vpn_username : null
+    client_ip_pool = var.ipsec_vpn_config.enable ? var.ipsec_vpn_config.client_ip_pool : null
+    server_ip      = var.ipsec_vpn_config.enable ? local.vpn_server_ip : null
+  }
 }
 
-output "vpn_password" {
-  value       = var.enable_ipsec_vpn && var.vpn_password == "" ? local.effective_vpn_password : null
-  description = "The auto-generated password for VPN authentication (only shown if auto-generated)"
-  sensitive   = true
-}
-
-output "ipsec_psk" {
-  value       = var.enable_ipsec_vpn && var.ipsec_psk == "" ? local.effective_ipsec_psk : null
-  description = "The auto-generated IPSec pre-shared key (only shown if auto-generated)"
-  sensitive   = true
-}
-
-output "vpn_client_ip_pool" {
-  value       = var.enable_ipsec_vpn ? var.vpn_client_ip_pool : null
-  description = "The IP address pool used for VPN clients"
+output "ipsec_vpn_secrets" {
+  description = "IPSec/L2TP VPN sensitive configuration values"
+  value = {
+    password = var.ipsec_vpn_config.enable && var.ipsec_vpn_config.password == "" ? local.effective_vpn_password : null
+    psk      = var.ipsec_vpn_config.enable && var.ipsec_vpn_config.psk == "" ? local.effective_ipsec_psk : null
+  }
+  sensitive = true
 }
 
 output "wireguard" {

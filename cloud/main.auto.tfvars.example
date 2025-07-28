@@ -13,3 +13,12 @@ wireguard_config = {
   enable              = true
   client_public_key   = "your_pubkey_here"
 }
+
+ipsec_vpn_config = {
+  enable          = true
+}
+
+ipsec_vpn_secrets = {
+  psk             = "a_psk"
+  password        = "a_password"
+}
