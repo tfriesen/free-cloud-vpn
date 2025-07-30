@@ -1,82 +1,76 @@
-# Configure IPSec/L2TP VPN
-DEBIAN_FRONTEND=noninteractive apt-get install -y libreswan xl2tpd
+# Configure IPSec/IKEv2 VPN
+DEBIAN_FRONTEND=noninteractive apt-get install -y strongswan strongswan-pki libcharon-extra-plugins libcharon-extauth-plugins libstrongswan-extra-plugins
 
+# Generate CA certificate
+ipsec pki --gen --type rsa --size 2048 --outform pem > /etc/ipsec.d/private/ca-key.pem
+ipsec pki --self --ca --lifetime 3650 --in /etc/ipsec.d/private/ca-key.pem --type rsa --dn "CN=VPN CA" --outform pem > /etc/ipsec.d/cacerts/ca-cert.pem
+
+# Generate server certificate
+ipsec pki --gen --type rsa --size 2048 --outform pem > /etc/ipsec.d/private/server-key.pem
+ipsec pki --pub --in /etc/ipsec.d/private/server-key.pem --type rsa | ipsec pki --issue --lifetime 3650 --cacert /etc/ipsec.d/cacerts/ca-cert.pem --cakey /etc/ipsec.d/private/ca-key.pem --dn "CN=${effective_vpn_username}" --san "${effective_vpn_username}" --flag serverAuth --flag ikeIntermediate --outform pem > /etc/ipsec.d/certs/server-cert.pem
+
+# Configure IPSec
 cat > /etc/ipsec.conf << 'IPSECCONF'
 config setup
-    virtual-private=%v4:10.0.0.0/8,%v4:192.168.0.0/16,%v4:172.16.0.0/12
-    protostack=netkey
+    charondebug="ike 2, knl 2, cfg 2, net 2, esp 2, dmn 2,  mgr 2"
     uniqueids=no
 
-conn L2TP-PSK-NAT
-    rightsubnet=vhost:%priv
-    also=L2TP-PSK-noNAT
-
-conn L2TP-PSK-noNAT
+conn %default
+    ikelifetime=60m
+    keylife=20m
+    rekeymargin=3m
+    keyingtries=1
+    keyexchange=ikev2
     authby=secret
-    pfs=no
+
+conn ikev2-vpn
     auto=add
-    keyingtries=3
-    rekey=no
-    ikelifetime=8h
-    keylife=1h
-    type=transport
-    left=%defaultroute
-    leftid=%defaultroute
-    leftprotoport=17/1701
-    right=%any
-    rightprotoport=17/%any
-    dpddelay=30
-    dpdtimeout=120
+    compress=no
+    type=tunnel
+    keyexchange=ikev2
+    fragmentation=yes
+    forceencaps=yes
+    ike=aes256-sha1-modp1024,3des-sha1-modp1024!
+    esp=aes256-sha1,3des-sha1!
     dpdaction=clear
-    encapsulation=yes
+    dpddelay=300s
+    rekey=no
+    left=%any
+    leftid=@server
+    leftcert=server-cert.pem
+    leftsendcert=always
+    leftsubnet=0.0.0.0/0
+    right=%any
+    rightid=%any
+    rightauth=eap-mschapv2
+    rightsourceip=${vpn_client_ip_start}-${vpn_client_ip_end}
+    rightdns=8.8.8.8,8.8.4.4
+    rightsendcert=never
+    eap_identity=%identity
 IPSECCONF
 
 # Configure IPSec secrets
 cat > /etc/ipsec.secrets << IPSECSECRETS
-%defaultroute : PSK "${effective_ipsec_psk}"
+: RSA server-key.pem
+${effective_vpn_username} : EAP "${effective_vpn_password}"
 IPSECSECRETS
 chmod 600 /etc/ipsec.secrets
 
-# Configure xl2tpd
-cat > /etc/xl2tpd/xl2tpd.conf << XL2TPDCONF
-[global]
-ipsec saref = yes
-saref refinfo = 30
+# Configure strongSwan
+cat > /etc/strongswan.conf << 'STRONGSWANCONF'
+charon {
+    load_modular = yes
+    plugins {
+        include strongswan.d/charon/*.conf
+    }
+    dns1 = 8.8.8.8
+    dns2 = 8.8.4.4
+    nbns1 = 8.8.8.8
+    nbns2 = 8.8.4.4
+}
 
-[lns default]
-ip range = ${vpn_client_ip_start}-${vpn_client_ip_end}
-local ip = ${vpn_server_ip}
-require chap = yes
-refuse pap = yes
-require authentication = yes
-name = l2tpd
-pppoptfile = /etc/ppp/options.xl2tpd
-length bit = yes
-XL2TPDCONF
-
-# Configure PPP options
-cat > /etc/ppp/options.xl2tpd << PPPOPTIONS
-ipcp-accept-local
-ipcp-accept-remote
-require-mschap-v2
-ms-dns 8.8.8.8
-ms-dns 8.8.4.4
-noccp
-auth
-mtu 1400
-mru 1400
-proxyarp
-lcp-echo-failure 4
-lcp-echo-interval 30
-connect-delay 5000
-name l2tpd
-PPPOPTIONS
-
-# Add VPN user
-cat > /etc/ppp/chap-secrets << CHAPSECRETS
-${effective_vpn_username} l2tpd "${effective_vpn_password}" *
-CHAPSECRETS
-chmod 600 /etc/ppp/chap-secrets
+include strongswan.d/*.conf
+STRONGSWANCONF
 
 # Enable IP forwarding
 echo "net.ipv4.ip_forward = 1" > /etc/sysctl.d/60-vpn.conf
@@ -89,7 +83,5 @@ echo "net.ipv4.conf.default.accept_redirects = 0" >> /etc/sysctl.d/60-vpn.conf
 sysctl -p /etc/sysctl.d/60-vpn.conf
 
 # Restart services
-systemctl enable ipsec
-systemctl enable xl2tpd
-systemctl restart ipsec
-systemctl restart xl2tpd 
+systemctl enable strongswan
+systemctl restart strongswan 

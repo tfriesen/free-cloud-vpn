@@ -33,7 +33,7 @@ variable "dns_tunnel_password" {
 }
 
 variable "alert_email" {
-  description = "Optional email address to receive Google Cloud free tier alerts"
+  description = "Optional email address to receive cloud provider free tier alerts"
   type        = string
   default     = null
 }
@@ -79,7 +79,7 @@ variable "custom_post_config" {
 }
 
 variable "ipsec_vpn_config" {
-  description = "Configuration for IPSec/L2TP VPN"
+  description = "Configuration for IPSec/IKEv2 VPN"
   type = object({
     enable         = bool
     username       = string
@@ -93,13 +93,11 @@ variable "ipsec_vpn_config" {
 }
 
 variable "ipsec_vpn_secrets" {
-  description = "Sensitive configuration values for IPSec/L2TP VPN"
+  description = "Sensitive configuration values for IPSec/IKEv2 VPN"
   type = object({
-    psk      = string
     password = string
   })
   default = {
-    psk      = ""
     password = ""
   }
   sensitive = true

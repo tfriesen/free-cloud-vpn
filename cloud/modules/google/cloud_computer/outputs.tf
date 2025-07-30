@@ -55,7 +55,7 @@ output "https_proxy_cert" {
 }
 
 output "ipsec_vpn" {
-  description = "IPSec/L2TP VPN configuration and status"
+  description = "IPSec/IKEv2 VPN configuration and status"
   value = {
     enabled        = var.ipsec_vpn_config.enable
     username       = var.ipsec_vpn_config.enable ? local.effective_vpn_username : null
@@ -65,10 +65,9 @@ output "ipsec_vpn" {
 }
 
 output "ipsec_vpn_secrets" {
-  description = "IPSec/L2TP VPN sensitive configuration values"
+  description = "IPSec/IKEv2 VPN sensitive configuration values"
   value = {
-    password = var.ipsec_vpn_config.enable && var.ipsec_vpn_config.password == "" ? local.effective_vpn_password : null
-    psk      = var.ipsec_vpn_config.enable && var.ipsec_vpn_config.psk == "" ? local.effective_ipsec_psk : null
+    password = var.ipsec_vpn_config.enable && var.ipsec_vpn_secrets.password == "" ? local.effective_vpn_password : null
   }
   sensitive = true
 }
@@ -87,7 +86,6 @@ output "wireguard" {
         server_pubkey = coalesce(data.google_compute_instance_guest_attributes.wg_public_key[0].variable_value, "There was an error retrieving the public key. It can be retrieved by logging into the VM in the file at `/etc/wireguard/public.key`")
         server_port   = var.wireguard_config.port
         server_ip     = google_compute_instance.free_tier_vm.network_interface[0].access_config[0].nat_ip
-        allowed_ips   = var.wireguard_config.client_allowed_ips
       }
     ) : null
   }

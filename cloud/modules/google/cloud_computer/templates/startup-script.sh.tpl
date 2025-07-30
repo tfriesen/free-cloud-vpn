@@ -47,7 +47,6 @@ ${templatefile("${path}/templates/dns-tunnel-setup.sh.tpl", {
 
 %{if ipsec_vpn_enabled}
 ${templatefile("${path}/templates/ipsec-vpn-setup.sh.tpl", {
-  effective_ipsec_psk = effective_ipsec_psk,
   vpn_client_ip_start = vpn_client_ip_start,
   vpn_client_ip_end = vpn_client_ip_end,
   vpn_server_ip = vpn_server_ip,

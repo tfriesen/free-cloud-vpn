@@ -1,7 +1,7 @@
 #see variables.tf for details and other options
 alert_email          = "myemail@gmail.com"
 emable_azure         = false
-enable_icmp_tunnel   = false
+enable_pingtunnel    = true
 https_proxy_password = "password456"
 
 #example using Hurricane Electric's dynamic DNS service to set the VPN host's DNS record

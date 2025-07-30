@@ -78,7 +78,7 @@ variable "pingtunnel_key" {
 }
 
 variable "ipsec_vpn_config" {
-  description = "Configuration for IPSec/L2TP VPN"
+  description = "Configuration for IPSec/IKEv2 VPN"
   type = object({
     enable         = bool
     username       = string
@@ -100,22 +100,12 @@ variable "ipsec_vpn_config" {
 }
 
 variable "ipsec_vpn_secrets" {
-  description = "Sensitive configuration values for IPSec/L2TP VPN"
+  description = "Sensitive configuration values for IPSec/IKEv2 VPN"
   type = object({
-    psk      = string
     password = string
   })
   default = {
-    psk      = ""
     password = ""
-  }
-  validation {
-    condition     = var.ipsec_vpn_secrets.psk == "" || can(regex("^[A-Za-z0-9!@#$%^&*()_+\\-=\\[\\]{};:'\",./?]{16,}$", var.ipsec_vpn_secrets.psk))
-    error_message = "If provided, psk must be at least 16 characters long and contain only letters, numbers, and common special characters."
-  }
-  validation {
-    condition     = var.ipsec_vpn_secrets.password == "" || can(regex("^[A-Za-z0-9!@#$%^&*()_+\\-=\\[\\]{};:'\",./?]{8,}$", var.ipsec_vpn_secrets.password))
-    error_message = "If provided, password must be at least 8 characters long and contain only letters, numbers, and common special characters."
   }
   sensitive = true
 }
@@ -123,34 +113,28 @@ variable "ipsec_vpn_secrets" {
 variable "wireguard_config" {
   description = "Configuration for WireGuard VPN"
   type = object({
-    enable             = bool
-    port               = number
-    client_public_key  = string
-    client_ip          = string
-    client_allowed_ips = string
+    enable            = bool
+    port              = number
+    client_public_key = string
+    client_ip         = string
   })
   default = {
-    enable             = false
-    port               = 51820
-    client_public_key  = ""
-    client_ip          = "172.31.11.2/24"
-    client_allowed_ips = "0.0.0.0/0"
+    enable            = false
+    port              = 51820
+    client_public_key = ""
+    client_ip         = "172.31.11.2/24"
   }
   validation {
-    condition     = var.wireguard_config.port > 0 && var.wireguard_config.port < 65536
-    error_message = "port must be a valid port number between 1 and 65535"
+    condition     = var.wireguard_config.port >= 1 && var.wireguard_config.port <= 65535
+    error_message = "port must be between 1 and 65535"
   }
   validation {
     condition     = var.wireguard_config.client_public_key == "" || can(regex("^[A-Za-z0-9+/]{43}=$", var.wireguard_config.client_public_key))
     error_message = "If provided, client_public_key must be a valid base64-encoded public key"
   }
   validation {
-    condition     = can(regex("^([0-9]{1,3}\\.){3}[0-9]{1,3}/[0-9]{1,2}$", var.wireguard_config.client_ip))
-    error_message = "client_ip must be a valid CIDR notation IP address"
-  }
-  validation {
-    condition     = can(regex("^([0-9]{1,3}\\.){3}[0-9]{1,3}/[0-9]{1,2}$", var.wireguard_config.client_allowed_ips))
-    error_message = "client_allowed_ips must be a valid CIDR notation IP address range"
+    condition     = var.wireguard_config.client_ip == "" || can(cidrhost(var.wireguard_config.client_ip, 0))
+    error_message = "client_ip must be a valid CIDR range"
   }
 }
 
@@ -161,7 +145,7 @@ variable "custom_pre_config" {
 }
 
 variable "custom_post_config" {
-  description = "Custom shell commands to run at the end of the startup script"
+  description = "Custom post-configuration commands to run after the main setup"
   type        = string
   default     = ""
 }

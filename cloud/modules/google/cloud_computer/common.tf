@@ -9,9 +9,6 @@ locals {
   effective_vpn_password = var.ipsec_vpn_secrets.password != "" ? var.ipsec_vpn_secrets.password : (
     var.ipsec_vpn_config.enable ? random_password.vpn[0].result : ""
   )
-  effective_ipsec_psk = var.ipsec_vpn_secrets.psk != "" ? var.ipsec_vpn_secrets.psk : (
-    var.ipsec_vpn_config.enable ? random_password.ipsec_psk[0].result : ""
-  )
   effective_pingtunnel_key = var.pingtunnel_key != -1 ? var.pingtunnel_key : (
     var.enable_pingtunnel ? random_integer.pingtunnel_key[0].result : -1
   )
@@ -44,12 +41,6 @@ resource "random_password" "proxy" {
 resource "random_password" "vpn" {
   count   = var.ipsec_vpn_config.enable && var.ipsec_vpn_secrets.password == "" ? 1 : 0
   length  = 16
-  special = false
-}
-
-resource "random_password" "ipsec_psk" {
-  count   = var.ipsec_vpn_config.enable && var.ipsec_vpn_secrets.psk == "" ? 1 : 0
-  length  = 32
   special = false
 }
 

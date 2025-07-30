@@ -118,7 +118,6 @@ resource "google_compute_instance" "free_tier_vm" {
     dns_tunnel_config      = var.dns_tunnel_config,
     # IPSec VPN
     ipsec_vpn_enabled      = var.ipsec_vpn_config.enable,
-    effective_ipsec_psk    = local.effective_ipsec_psk,
     vpn_client_ip_start    = local.vpn_client_ip_start,
     vpn_client_ip_end      = local.vpn_client_ip_end,
     vpn_server_ip          = local.vpn_server_ip,
