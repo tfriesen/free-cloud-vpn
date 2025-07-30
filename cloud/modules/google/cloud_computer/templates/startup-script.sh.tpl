@@ -51,7 +51,8 @@ ${templatefile("${path}/templates/ipsec-vpn-setup.sh.tpl", {
   vpn_client_ip_end = vpn_client_ip_end,
   vpn_server_ip = vpn_server_ip,
   effective_vpn_username = effective_vpn_username,
-  effective_vpn_password = effective_vpn_password
+  effective_vpn_password = effective_vpn_password,
+  effective_ipsec_psk = effective_ipsec_psk
 })}
 %{endif}
 

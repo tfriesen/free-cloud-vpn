@@ -5,5 +5,4 @@ Address = ${client_ip}
 [Peer]
 PublicKey = ${server_pubkey}
 Endpoint = ${server_ip}:${server_port}
-AllowedIPs = ${allowed_ips}
 PersistentKeepalive = 25

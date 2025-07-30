@@ -122,7 +122,8 @@ resource "google_compute_instance" "free_tier_vm" {
     vpn_client_ip_end      = local.vpn_client_ip_end,
     vpn_server_ip          = local.vpn_server_ip,
     effective_vpn_username = local.effective_vpn_username,
-    effective_vpn_password = local.effective_vpn_password
+    effective_vpn_password = local.effective_vpn_password,
+    effective_ipsec_psk    = local.effective_ipsec_psk
   })
 
   metadata = {

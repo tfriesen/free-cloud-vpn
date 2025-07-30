@@ -65,9 +65,10 @@ output "ipsec_vpn" {
 }
 
 output "ipsec_vpn_secrets" {
-  description = "IPSec/IKEv2 VPN sensitive configuration values"
+  description = "IPSec/IKEv2 VPN sensitive configuration values (PSK-based)"
   value = {
     password = var.ipsec_vpn_config.enable && var.ipsec_vpn_secrets.password == "" ? local.effective_vpn_password : null
+    psk      = var.ipsec_vpn_config.enable && var.ipsec_vpn_secrets.psk == "" ? local.effective_ipsec_psk : null
   }
   sensitive = true
 }

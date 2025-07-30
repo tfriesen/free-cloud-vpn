@@ -58,12 +58,12 @@ output "wireguard" {
 }
 
 output "ipsec_vpn" {
-  description = "IPSec/L2TP VPN configuration and status"
+  description = "IPSec/IKEv2 VPN configuration and status"
   value       = length(module.google) > 0 && var.ipsec_vpn_config.enable ? module.google[0].ipsec_vpn : null
 }
 
 output "ipsec_vpn_secrets" {
-  description = "IPSec/L2TP VPN sensitive configuration values"
+  description = "IPSec/IKEv2 VPN sensitive configuration values"
   value       = length(module.google) > 0 ? module.google[0].ipsec_vpn_secrets : null
   sensitive   = true
 }

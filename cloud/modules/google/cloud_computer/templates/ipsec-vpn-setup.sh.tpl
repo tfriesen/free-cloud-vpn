@@ -1,13 +1,5 @@
-# Configure IPSec/IKEv2 VPN
+# Configure IPSec/IKEv2 VPN (PSK-based)
 DEBIAN_FRONTEND=noninteractive apt-get install -y strongswan strongswan-pki libcharon-extra-plugins libcharon-extauth-plugins libstrongswan-extra-plugins
-
-# Generate CA certificate
-ipsec pki --gen --type rsa --size 2048 --outform pem > /etc/ipsec.d/private/ca-key.pem
-ipsec pki --self --ca --lifetime 3650 --in /etc/ipsec.d/private/ca-key.pem --type rsa --dn "CN=VPN CA" --outform pem > /etc/ipsec.d/cacerts/ca-cert.pem
-
-# Generate server certificate
-ipsec pki --gen --type rsa --size 2048 --outform pem > /etc/ipsec.d/private/server-key.pem
-ipsec pki --pub --in /etc/ipsec.d/private/server-key.pem --type rsa | ipsec pki --issue --lifetime 3650 --cacert /etc/ipsec.d/cacerts/ca-cert.pem --cakey /etc/ipsec.d/private/ca-key.pem --dn "CN=${effective_vpn_username}" --san "${effective_vpn_username}" --flag serverAuth --flag ikeIntermediate --outform pem > /etc/ipsec.d/certs/server-cert.pem
 
 # Configure IPSec
 cat > /etc/ipsec.conf << 'IPSECCONF'
@@ -21,7 +13,7 @@ conn %default
     rekeymargin=3m
     keyingtries=1
     keyexchange=ikev2
-    authby=secret
+    authby=psk
 
 conn ikev2-vpn
     auto=add
@@ -30,15 +22,13 @@ conn ikev2-vpn
     keyexchange=ikev2
     fragmentation=yes
     forceencaps=yes
-    ike=aes256-sha1-modp1024,3des-sha1-modp1024!
-    esp=aes256-sha1,3des-sha1!
+    ike=aes256-sha1-sha256-sha512-modp1024-modp2048!
+    esp=aes256-sha1-sha256-sha512!
     dpdaction=clear
     dpddelay=300s
     rekey=no
     left=%any
     leftid=@server
-    leftcert=server-cert.pem
-    leftsendcert=always
     leftsubnet=0.0.0.0/0
     right=%any
     rightid=%any
@@ -51,7 +41,7 @@ IPSECCONF
 
 # Configure IPSec secrets
 cat > /etc/ipsec.secrets << IPSECSECRETS
-: RSA server-key.pem
+@server : PSK "${effective_ipsec_psk}"
 ${effective_vpn_username} : EAP "${effective_vpn_password}"
 IPSECSECRETS
 chmod 600 /etc/ipsec.secrets
@@ -83,5 +73,5 @@ echo "net.ipv4.conf.default.accept_redirects = 0" >> /etc/sysctl.d/60-vpn.conf
 sysctl -p /etc/sysctl.d/60-vpn.conf
 
 # Restart services
-systemctl enable strongswan
-systemctl restart strongswan 
+systemctl enable ipsec
+systemctl restart ipsec 

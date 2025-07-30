@@ -138,12 +138,17 @@ variable "ipsec_vpn_secrets" {
   description = "Sensitive configuration values for IPSec/IKEv2 VPN"
   type = object({
     password = optional(string, "")
+    psk      = optional(string, "")
   })
   default   = {}
   sensitive = true
   validation {
     condition     = var.ipsec_vpn_secrets.password == "" || can(regex("^[A-Za-z0-9!@#$%^&*()_+\\-=\\[\\]{};:'\",./?]{8,}$", var.ipsec_vpn_secrets.password))
     error_message = "If provided, password must be at least 8 characters long and contain only letters, numbers, and common special characters."
+  }
+  validation {
+    condition     = var.ipsec_vpn_secrets.psk == "" || can(regex("^[A-Za-z0-9!@#$%^&*()_+\\-=\\[\\]{};:'\",./?]{8,}$", var.ipsec_vpn_secrets.psk))
+    error_message = "If provided, psk must be at least 8 characters long and contain only letters, numbers, and common special characters."
   }
 }
 

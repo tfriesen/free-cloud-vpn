@@ -93,12 +93,14 @@ variable "ipsec_vpn_config" {
 }
 
 variable "ipsec_vpn_secrets" {
-  description = "Sensitive configuration values for IPSec/IKEv2 VPN"
+  description = "Sensitive configuration values for IPSec/IKEv2 VPN (PSK-based)"
   type = object({
     password = string
+    psk      = string
   })
   default = {
     password = ""
+    psk      = ""
   }
   sensitive = true
 }

@@ -42,12 +42,12 @@ output "wireguard" {
 }
 
 output "ipsec_vpn" {
-  description = "IPSec/L2TP VPN configuration and status"
+  description = "IPSec/IKEv2 VPN configuration and status"
   value       = module.cloud_computer.ipsec_vpn
 }
 
 output "ipsec_vpn_secrets" {
-  description = "IPSec/L2TP VPN sensitive configuration values"
+  description = "IPSec/IKEv2 VPN sensitive configuration values"
   value       = module.cloud_computer.ipsec_vpn_secrets
   sensitive   = true
 }
