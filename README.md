@@ -14,7 +14,7 @@ Automatically sets up a free-tier VM in Google Cloud. This VM has 2 vCPU cores a
 2. SSH on port TCP/80
 3. HTTPS proxy on TCP/443. Specify a cert or generate a self-signed one. (Letsencrypt support coming, probably!)
 4. DNS tunnel (DNS config must be completed externally. Kinda flaky, still in search of good relays)
-5. ICMP tunnel (flaky, needs more testing, and not encrypted. Flakieness might be due to WSL, though)
+5. Pingtunnel, see https://github.com/esrrhs/pingtunnel?tab=readme-ov-file Works well! But note it is not encrypted.
 6. Wireguard. Generate a client key and pass it in.
 7. IPSec/L2TP (broken at the moment, and not sure why)
 
@@ -34,12 +34,11 @@ You will need to:
 4. `cd` into `cloud/`, and run `tofu init`
 5. Run `tofu apply`, and if everything looks good, it should deploy your VPN
 6. If everything worked, the output should give you most of what you need to connect. IP address, etc. However, any generated passwords, secrets or private keys will be redacted. To view those, run `tofu output -show-sensitive`
-7. Use your proxies as you see fit. How you can leverage these services to proxy or VPN your traffic is outside the scope of this document.
+7. Use your proxies as you see fit. How you can leverage these services to proxy or VPN your traffic is outside the scope of this document. If it's privacy you're after, mind your DNS!
 
 ## Roadmap
 
 * Explore IPSec, GRE and L2TP tunnels
 ** GRE won't punch through NAT without help, and needs to be able to access the server to configure it *anyway* so doubtful how useful it would be
 * Use serverless functionality to proxy HTTP connections (eg tell a lambda to fetch HTTP resources for you)
-* Find a better ICMP tunnel implementation, or write my own
 * Explore running service on UDP/443 and/or tunnelling over QUIC

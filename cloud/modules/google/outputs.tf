@@ -19,6 +19,12 @@ output "vm_fqdn" {
   value = module.cloud_computer.vm_fqdn
 }
 
+output "pingtunnel_key" {
+  description = "The key for pingtunnel authentication (only if enabled and auto-generated)"
+  value       = module.cloud_computer.pingtunnel_key
+  sensitive   = true
+}
+
 output "dns_tunnel_password" {
   description = "The password for the DNS tunnel (only if enabled and auto-generated)"
   value       = module.cloud_computer.dns_tunnel_password

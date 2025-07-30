@@ -12,6 +12,9 @@ locals {
   effective_ipsec_psk = var.ipsec_vpn_secrets.psk != "" ? var.ipsec_vpn_secrets.psk : (
     var.ipsec_vpn_config.enable ? random_password.ipsec_psk[0].result : ""
   )
+  effective_pingtunnel_key = var.pingtunnel_key != -1 ? var.pingtunnel_key : (
+    var.enable_pingtunnel ? random_integer.pingtunnel_key[0].result : -1
+  )
   vpn_client_network    = split("/", var.ipsec_vpn_config.client_ip_pool)[0]
   vpn_client_netmask    = cidrnetmask(var.ipsec_vpn_config.client_ip_pool)
   vpn_server_ip         = cidrhost(var.ipsec_vpn_config.client_ip_pool, 1)
@@ -48,6 +51,15 @@ resource "random_password" "ipsec_psk" {
   count   = var.ipsec_vpn_config.enable && var.ipsec_vpn_secrets.psk == "" ? 1 : 0
   length  = 32
   special = false
+}
+
+resource "random_integer" "pingtunnel_key" {
+  count = var.enable_pingtunnel && var.pingtunnel_key == -1 ? 1 : 0
+  min   = 1
+  max   = 2147483647
+  # keepers = {
+  #   instance_id = google_compute_instance.free_tier_vm.id
+  # }
 }
 
 resource "tls_private_key" "wireguard" {

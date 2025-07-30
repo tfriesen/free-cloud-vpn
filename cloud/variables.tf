@@ -78,10 +78,20 @@ variable "custom_post_config" {
   default     = ""
 }
 
-variable "enable_icmp_tunnel" {
-  description = "Whether to enable ICMP tunneling"
+variable "enable_pingtunnel" {
+  description = "Whether to enable pingtunnel (ICMP tunneling using pingtunnel project)"
   type        = bool
-  default     = false
+  default     = true
+}
+
+variable "pingtunnel_key" {
+  description = "Key for pingtunnel authentication (integer between 0-2147483647). If not specified, a random key will be generated"
+  type        = number
+  default     = -1
+  validation {
+    condition     = var.pingtunnel_key >= -1 && var.pingtunnel_key <= 2147483647
+    error_message = "pingtunnel_key must be an integer between 0 and 2147483647"
+  }
 }
 
 variable "https_proxy_password" {

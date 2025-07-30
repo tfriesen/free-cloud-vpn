@@ -31,6 +31,12 @@ output "aws_lambda_url" {
   value       = length(module.aws) > 0 ? module.aws[0].lambda_function_url : null
 }
 
+output "pingtunnel_key" {
+  description = "The key for pingtunnel authentication (only if enabled and auto-generated)"
+  value       = length(module.google) > 0 ? module.google[0].pingtunnel_key : null
+  sensitive   = true
+}
+
 output "dns_tunnel_password" {
   description = "The password for the DNS tunnel (only if enabled and auto-generated)"
   value       = length(module.google) > 0 ? module.google[0].dns_tunnel_password : null

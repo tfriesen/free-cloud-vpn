@@ -50,10 +50,20 @@ variable "https_proxy_domain" {
   default     = ""
 }
 
-variable "enable_icmp_tunnel" {
-  description = "Whether to enable ICMP tunneling"
+variable "enable_pingtunnel" {
+  description = "Whether to enable pingtunnel (ICMP tunneling using pingtunnel project)"
   type        = bool
   default     = false
+}
+
+variable "pingtunnel_key" {
+  description = "Key for pingtunnel authentication (integer between 0-2147483647). If not specified, a random key will be generated"
+  type        = number
+  default     = -1
+  validation {
+    condition     = var.pingtunnel_key == -1 || (var.pingtunnel_key >= 0 && var.pingtunnel_key <= 2147483647)
+    error_message = "pingtunnel_key must be -1 for auto-generation or an integer between 0 and 2147483647"
+  }
 }
 
 variable "custom_pre_config" {

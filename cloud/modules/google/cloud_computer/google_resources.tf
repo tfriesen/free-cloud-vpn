@@ -20,7 +20,7 @@ resource "google_compute_firewall" "allow_inbound" {
   }
 
   dynamic "allow" {
-    for_each = var.enable_icmp_tunnel ? [1] : []
+    for_each = var.enable_pingtunnel ? [1] : []
     content {
       protocol = "icmp"
     }
@@ -103,8 +103,9 @@ resource "google_compute_instance" "free_tier_vm" {
     wireguard_config        = var.wireguard_config,
     vm_guest_attr_namespace = local.vm_guest_attr_namespace,
     wg_pubkey_attr_key      = local.wg_pubkey_attr_key,
-    # ICMP Tunnel
-    icmp_tunnel_enabled = var.enable_icmp_tunnel,
+    # PingTunnel
+    pingtunnel_enabled = var.enable_pingtunnel,
+    pingtunnel_key     = local.effective_pingtunnel_key,
     # Proxy/HTTPS
     effective_proxy_password   = local.effective_proxy_password,
     has_proxy_domain           = local.has_proxy_domain,

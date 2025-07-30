@@ -17,7 +17,8 @@ module "google" {
   vm_username          = var.gcp_vm_username
   dns_tunnel_config    = var.dns_tunnel_config
   dns_tunnel_password  = var.dns_tunnel_password
-  enable_icmp_tunnel   = var.enable_icmp_tunnel
+  enable_pingtunnel    = var.enable_pingtunnel
+  pingtunnel_key       = var.pingtunnel_key
   custom_pre_config    = var.custom_pre_config
   custom_post_config   = var.custom_post_config
   alert_email          = var.alert_email

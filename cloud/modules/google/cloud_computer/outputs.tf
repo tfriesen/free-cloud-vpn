@@ -21,6 +21,12 @@ output "vm_fqdn" {
   description = "FQDN for the VM based on its IPv4 address"
 }
 
+output "pingtunnel_key" {
+  description = "The key for pingtunnel authentication (only if enabled and auto-generated)"
+  value       = var.enable_pingtunnel && var.pingtunnel_key == -1 ? local.effective_pingtunnel_key : null
+  sensitive   = true
+}
+
 output "dns_tunnel_password" {
   description = "The password for the DNS tunnel (only if enabled and auto-generated)"
   value       = var.dns_tunnel_config.enable && var.dns_tunnel_password == "" ? local.effective_dns_password : null

@@ -24,8 +24,10 @@ ${templatefile("${path}/templates/wireguard-setup.sh.tpl", {
 })}
 %{endif}
 
-%{if icmp_tunnel_enabled}
-${templatefile("${path}/templates/icmp-tunnel-setup.sh.tpl", {})}
+%{if pingtunnel_enabled}
+${templatefile("${path}/templates/pingtunnel-setup.sh.tpl", {
+  pingtunnel_key = pingtunnel_key
+})}
 %{endif}
 
 ${templatefile("${path}/templates/proxy-setup.sh.tpl", {
