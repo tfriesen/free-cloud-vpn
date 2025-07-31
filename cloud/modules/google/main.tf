@@ -32,6 +32,7 @@ module "cloud_computer" {
   ipsec_vpn_config     = var.ipsec_vpn_config
   ipsec_vpn_secrets    = var.ipsec_vpn_secrets
   wireguard_config     = var.wireguard_config
+  ssh_ports            = var.ssh_ports
 
   # Ensure API is enabled and ready before creating compute resources
   depends_on = [time_sleep.wait_compute_api]

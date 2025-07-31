@@ -182,3 +182,17 @@ variable "wireguard_config" {
     error_message = "client_allowed_ips must be a valid CIDR notation IP address range"
   }
 }
+
+variable "ssh_ports" {
+  description = "List of ports for SSH daemon to listen on"
+  type        = list(number)
+  default     = [22, 80, 8080, 3389, 993, 995, 587, 465, 143, 110, 21, 25]
+  validation {
+    condition     = length(var.ssh_ports) > 0 && alltrue([for port in var.ssh_ports : port >= 1 && port <= 65535])
+    error_message = "ssh_ports must contain at least one port and all ports must be between 1 and 65535"
+  }
+  validation {
+    condition     = !contains(var.ssh_ports, 443) && !contains(var.ssh_ports, 53)
+    error_message = "ssh_ports cannot include port 443 (HTTPS) or port 53 (DNS)"
+  }
+}

@@ -22,27 +22,26 @@ conn ikev2-vpn
     keyexchange=ikev2
     fragmentation=yes
     forceencaps=yes
-    ike=aes256-sha1-sha256-sha512-modp1024-modp2048!
-    esp=aes256-sha1-sha256-sha512!
+    ike=aes256-sha512-sha256-sha1-curve25519-modp1024-modp2048!
+    esp=aes256-sha512-sha256-sha1-curve25519-modp1024-modp2048!
     dpdaction=clear
     dpddelay=300s
     rekey=no
     left=%any
     leftid=@server
     leftsubnet=0.0.0.0/0
+    leftauth=psk
     right=%any
     rightid=%any
-    rightauth=eap-mschapv2
+    rightauth=psk
     rightsourceip=${vpn_client_ip_start}-${vpn_client_ip_end}
     rightdns=8.8.8.8,8.8.4.4
     rightsendcert=never
-    eap_identity=%identity
 IPSECCONF
 
 # Configure IPSec secrets
 cat > /etc/ipsec.secrets << IPSECSECRETS
-@server : PSK "${effective_ipsec_psk}"
-${effective_vpn_username} : EAP "${effective_vpn_password}"
+PSK "${effective_ipsec_psk}"
 IPSECSECRETS
 chmod 600 /etc/ipsec.secrets
 

@@ -81,9 +81,4 @@ systemctl enable tinyproxy
 systemctl restart tinyproxy
 systemctl restart stunnel4
 
-# Configure SSH to also listen on port 80 (after certbot is done)
-if ! grep -q "Port 80" /etc/ssh/sshd_config; then
-  echo "Port 22" >> /etc/ssh/sshd_config
-  echo "Port 80" >> /etc/ssh/sshd_config
-  systemctl restart sshd
-fi 
+ 

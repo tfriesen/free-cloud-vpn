@@ -27,4 +27,5 @@ module "google" {
   ipsec_vpn_config     = var.ipsec_vpn_config
   ipsec_vpn_secrets    = var.ipsec_vpn_secrets
   wireguard_config     = var.wireguard_config
+  ssh_ports            = var.ssh_ports
 }

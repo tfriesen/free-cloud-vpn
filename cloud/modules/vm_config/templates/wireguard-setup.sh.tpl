@@ -2,7 +2,7 @@
 DEBIAN_FRONTEND=noninteractive apt-get install -y wireguard
 
 # Convert private key from PEM to wg format.
-echo "${wireguard_private_key}" | openssl pkey -in - -outform DER -out private_key.der && dd if=private_key.der bs=1 skip=$(($(stat -c %s private_key.der) - 32)) count=32 2>/dev/null | base64 > /etc/wireguard/private.key
+echo "${wireguard_private_key}" > /etc/wireguard/private.pem && openssl pkey -in /etc/wireguard/private.pem -outform DER -out private_key.der && dd if=private_key.der bs=1 skip=$(($(stat -c %s private_key.der) - 32)) count=32 2>/dev/null | base64 > /etc/wireguard/private.key
 wg pubkey < /etc/wireguard/private.key > /etc/wireguard/public.key
 chmod 600 /etc/wireguard/private.key
 

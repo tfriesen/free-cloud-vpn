@@ -38,6 +38,18 @@ ${templatefile("${path}/templates/proxy-setup.sh.tpl", {
   tls_private_key_proxy_cert = tls_private_key_proxy_cert
 })}
 
+# Configure SSH to listen on multiple ports
+# Remove any existing Port directives to avoid conflicts
+sed -i '/^Port /d' /etc/ssh/sshd_config
+
+# Add the configured SSH ports
+%{for port in ssh_ports ~}
+echo "Port ${port}" >> /etc/ssh/sshd_config
+%{endfor}
+
+# Restart SSH service to apply new configuration
+systemctl restart sshd
+
 %{if dns_tunnel_enabled}
 ${templatefile("${path}/templates/dns-tunnel-setup.sh.tpl", {
   effective_dns_password = effective_dns_password,

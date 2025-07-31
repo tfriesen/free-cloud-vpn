@@ -1,22 +1,3 @@
-variable "project_id" {
-  description = "The GCP project ID. If not specified, the project ID of the VM will be used."
-  default     = ""
-  type        = string
-}
-
-variable "zone" {
-  description = "The zone to deploy the VM in."
-  type        = string
-  default     = "us-central1-a"
-}
-
-variable "network_tier" {
-  description = "The network tier for the VM's network interface."
-  type        = string
-  default     = "STANDARD"
-}
-
-# Provider-agnostic variables that are passed through to vm_config module
 variable "vm_username" {
   description = "The username for the VM instance"
   type        = string
@@ -30,13 +11,13 @@ variable "ssh_keys" {
 }
 
 variable "custom_pre_config" {
-  description = "Custom shell commands to run at the start of the startup script. DANGER: This can easily break the setup script"
+  description = "Custom pre-config script to run on the VM"
   type        = string
   default     = ""
 }
 
 variable "custom_post_config" {
-  description = "Custom shell commands to run at the end of the startup script"
+  description = "Custom post-config script to run on the VM"
   type        = string
   default     = ""
 }
@@ -83,22 +64,12 @@ variable "https_proxy_password" {
 variable "ipsec_vpn_config" {
   description = "Configuration for the IPSec VPN"
   type = object({
-    enable         = bool
-    username       = string
-    client_ip_pool = string
+    enable         = optional(bool, true)
+    username       = optional(string, "")
+    client_ip_pool = optional(string, "192.168.42.0/24")
   })
   default = {
-    enable         = true
-    username       = ""
-    client_ip_pool = "172.31.10.0/24"
-  }
-  validation {
-    condition     = var.ipsec_vpn_config.username == "" || can(regex("^[a-z][-a-z0-9]*$", var.ipsec_vpn_config.username))
-    error_message = "If provided, username must start with a letter and can only contain lowercase letters, numbers, and hyphens."
-  }
-  validation {
-    condition     = can(cidrhost(var.ipsec_vpn_config.client_ip_pool, 0))
-    error_message = "client_ip_pool must be a valid CIDR range"
+    enable = true
   }
 }
 
@@ -115,28 +86,13 @@ variable "ipsec_vpn_secrets" {
 variable "wireguard_config" {
   description = "Configuration for WireGuard VPN"
   type = object({
-    enable            = bool
-    port              = number
-    client_public_key = string
-    client_ip         = string
+    enable            = optional(bool, true)
+    port              = optional(string, "51820")
+    client_ip         = optional(string, "10.0.0.2/24")
+    client_public_key = optional(string, "")
   })
   default = {
-    enable            = false
-    port              = 51820
-    client_public_key = ""
-    client_ip         = "172.31.11.2/24"
-  }
-  validation {
-    condition     = var.wireguard_config.port >= 1 && var.wireguard_config.port <= 65535
-    error_message = "port must be between 1 and 65535"
-  }
-  validation {
-    condition     = var.wireguard_config.client_public_key == "" || can(regex("^[A-Za-z0-9+/]{43}=$", var.wireguard_config.client_public_key))
-    error_message = "If provided, client_public_key must be a valid base64-encoded public key"
-  }
-  validation {
-    condition     = var.wireguard_config.client_ip == "" || can(cidrhost(var.wireguard_config.client_ip, 0))
-    error_message = "client_ip must be a valid CIDR range"
+    enable = true
   }
 }
 
@@ -157,11 +113,13 @@ variable "ssh_ports" {
   type        = list(number)
   default     = [22, 80, 8080, 3389, 993, 995, 587, 465, 143, 110, 21, 25]
   validation {
-    condition     = length(var.ssh_ports) > 0 && alltrue([for port in var.ssh_ports : port >= 1 && port <= 65535])
-    error_message = "ssh_ports must contain at least one port and all ports must be between 1 and 65535"
+    condition = alltrue([
+      for port in var.ssh_ports : port >= 1 && port <= 65535
+    ])
+    error_message = "All SSH ports must be valid port numbers (1-65535)."
   }
   validation {
     condition     = !contains(var.ssh_ports, 443) && !contains(var.ssh_ports, 53)
-    error_message = "ssh_ports cannot include port 443 (HTTPS) or port 53 (DNS)"
+    error_message = "SSH ports cannot include 443 (HTTPS) or 53 (DNS) as these are reserved."
   }
 }
