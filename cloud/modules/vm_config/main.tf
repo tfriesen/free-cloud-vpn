@@ -119,8 +119,8 @@ locals {
     effective_proxy_password   = local.effective_proxy_password
     has_proxy_domain           = local.has_proxy_domain
     https_proxy_domain         = var.https_proxy_domain != "" ? var.https_proxy_domain : "proxy.local"
-    tls_self_signed_cert_proxy = local.has_proxy_domain ? tls_self_signed_cert.proxy[0] : ""
-    tls_private_key_proxy_cert = local.has_proxy_domain ? tls_private_key.proxy[0] : ""
+    tls_self_signed_cert_proxy = local.has_proxy_domain ? tls_self_signed_cert.proxy[0].cert_pem : ""
+    tls_private_key_proxy_cert = local.has_proxy_domain ? tls_private_key.proxy[0].private_key_pem : ""
 
     # DNS Tunnel
     dns_tunnel_enabled     = var.dns_tunnel_config.enable
