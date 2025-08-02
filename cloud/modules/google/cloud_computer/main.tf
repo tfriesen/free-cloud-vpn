@@ -97,7 +97,8 @@ resource "google_compute_instance" "free_tier_vm" {
   }
 
   metadata = {
-    ssh-keys                = module.vm_config.effective_ssh_key
+    # Some hackiness to meet Google's format for ssh-keys: "username:public_key"
+    ssh-keys                = join(":", split(" ", module.vm_config.effective_ssh_key)[1], split(" ", module.vm_config.effective_ssh_key)[0])
     enable-guest-attributes = "TRUE"
   }
 

@@ -23,3 +23,5 @@ provider "azurerm" {
 }
 
 provider "google" {}
+
+provider "oci" {}

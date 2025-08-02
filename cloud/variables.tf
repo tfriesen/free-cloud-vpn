@@ -17,6 +17,29 @@ variable "enable_google" {
   default     = true
 }
 
+variable "enable_oracle" {
+  description = "Enable Oracle Cloud module"
+  type        = bool
+  default     = false
+}
+
+variable "oracle_config" {
+  description = "Oracle Cloud configuration for free-tier VM."
+  type = object({
+    tenancy_ocid        = string
+    user_ocid           = string
+    fingerprint         = string
+    private_key_path    = string
+    region              = string
+    compartment_id      = string
+    availability_domain = string
+    subnet_id           = string
+    image_id            = string
+    shape               = string
+    display_name        = optional(string, "free-tier-vm")
+  })
+}
+
 # AWS Configuration
 variable "alert_email" {
   description = "Optional email address to receive free tier alerts. If not provided, alerts will not be configured."
