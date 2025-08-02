@@ -68,32 +68,20 @@ resource "tls_private_key" "wireguard" {
   algorithm = "ED25519"
 }
 
-resource "tls_cert_request" "proxy_csr" {
-  count           = local.has_proxy_domain ? 1 : 0
-  private_key_pem = tls_private_key.proxy[0].private_key_pem
-
-  subject {
-    common_name = var.https_proxy_domain
-  }
-
-  dns_names = [var.https_proxy_domain]
-}
-
 resource "tls_private_key" "proxy" {
-  count     = local.has_proxy_domain ? 1 : 0
-  algorithm = "RSA"
-  rsa_bits  = 2048
+  count     = local.has_proxy_domain ? 0 : 1
+  algorithm = "ED25519"
 }
 
 resource "tls_self_signed_cert" "proxy" {
-  count           = local.has_proxy_domain ? 1 : 0
+  count           = local.has_proxy_domain ? 0 : 1
   private_key_pem = tls_private_key.proxy[0].private_key_pem
 
   subject {
-    common_name = var.https_proxy_domain
+    common_name = "ACME, Inc."
   }
 
-  dns_names = [var.https_proxy_domain]
+  dns_names = ["ACME, Inc."]
 
   validity_period_hours = 8760 # 1 year
 

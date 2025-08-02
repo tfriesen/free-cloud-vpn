@@ -2,7 +2,7 @@
 
 ## Goal
 
-To make it easy to set up and use a fully private VPN using only free tier offerings on popular cloud services. The VPN should support as many connection modes as possible in order to maximize the ability to punch through restrictive or heavily surveilled networks.
+To make it easy to set up and use a fully private VPN using only free tier offerings on popular cloud services. Further, the VPN should support as many connection modes as possible in order to maximize the ability to punch through restrictive or heavily surveilled networks.
 
 Also, I wanted to experiment with codegen AI agents, so something like 90% of this project was written with Copilot and/or Cursor. Free tier, obviously. Mixed results, tbh. Impressive what it can do, but definitely needs some serious hand-holding and double-checking.
 
@@ -10,13 +10,12 @@ Also, I wanted to experiment with codegen AI agents, so something like 90% of th
 
 Automatically sets up a free-tier VM in Google Cloud. This VM has 2 vCPU cores and 1 GB of RAM. It supports the following methods of connecting and/or tunnelling:
 
-1. SSH on port TCP/22
-2. SSH on port TCP/80
-3. HTTPS proxy on TCP/443. Specify a cert or generate a self-signed one. (Letsencrypt support coming, probably!)
-4. DNS tunnel (DNS config must be completed externally. Kinda flaky, still in search of good relays)
-5. Pingtunnel, see https://github.com/esrrhs/pingtunnel?tab=readme-ov-file Works well! But note it is not encrypted.
-6. Wireguard. Generate a client key and pass it in.
-7. IPSec/L2TP (broken at the moment, and not sure why)
+1. SSH on port TCP/22 and any others you want!
+2. HTTPS proxy on TCP/443. Specify a cert or generate a self-signed one. (Letsencrypt support coming, probably!)
+3. DNS tunnel (DNS config must be completed externally. Relay mode sucks)
+4. Pingtunnel, see https://github.com/esrrhs/pingtunnel?tab=readme-ov-file Works well! But note it is not encrypted. And looks like a DoS to your cloud provider.
+5. Wireguard. Generate a client key and pass it in.
+6. IPSec/IKEv2 VPN (via PSK)
 
 ### Limits
 
@@ -38,7 +37,12 @@ You will need to:
 
 ## Roadmap
 
-* Explore IPSec, GRE and L2TP tunnels
-** GRE won't punch through NAT without help, and needs to be able to access the server to configure it *anyway* so doubtful how useful it would be
 * Use serverless functionality to proxy HTTP connections (eg tell a lambda to fetch HTTP resources for you)
 * Explore running service on UDP/443 and/or tunnelling over QUIC
+* More cloud providers!
+
+## Known issues
+
+* Pingtunnel works great, but not encrypted. And your cloud provider will probably send you nasty warnings about DoS'ing people
+* SSH keys on GCP are bugged. They're set almost properly. You'll have to login to the GCP console, edit the config, and then just save it without changing anything. Then they'll work right.
+* Can't ping the other side of the wireguard tunnel. Traffic fowards fine, once you get the routes set up. Probably just a firewall/NAT issue.

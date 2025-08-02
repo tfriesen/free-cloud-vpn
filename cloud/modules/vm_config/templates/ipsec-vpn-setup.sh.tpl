@@ -4,7 +4,7 @@ DEBIAN_FRONTEND=noninteractive apt-get install -y strongswan strongswan-pki libc
 # Configure IPSec
 cat > /etc/ipsec.conf << 'IPSECCONF'
 config setup
-    charondebug="ike 2, knl 2, cfg 2, net 2, esp 2, dmn 2,  mgr 2"
+    charondebug="ike 2, knl 2, cfg 2, net 1, esp 2, dmn 2,  mgr 2"
     uniqueids=no
 
 conn %default
@@ -41,7 +41,7 @@ IPSECCONF
 
 # Configure IPSec secrets
 cat > /etc/ipsec.secrets << IPSECSECRETS
-PSK "${effective_ipsec_psk}"
+: PSK "${effective_ipsec_psk}"
 IPSECSECRETS
 chmod 600 /etc/ipsec.secrets
 
