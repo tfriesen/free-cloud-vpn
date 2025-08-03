@@ -96,8 +96,12 @@ resource "tls_self_signed_cert" "proxy" {
 locals {
   startup_script_vars = {
     # Path and SSH
-    path      = path.module
-    ssh_ports = var.ssh_ports
+    path          = path.module
+    ssh_ports     = var.ssh_ports
+
+    # Instance-specific
+    cloud_provider = var.cloud_provider
+    arch          = var.arch
 
     # Custom user shell hooks
     custom_pre_config  = var.custom_pre_config
@@ -119,8 +123,8 @@ locals {
     effective_proxy_password   = local.effective_proxy_password
     has_proxy_domain           = local.has_proxy_domain
     https_proxy_domain         = var.https_proxy_domain != "" ? var.https_proxy_domain : "proxy.local"
-    tls_self_signed_cert_proxy = local.has_proxy_domain ? tls_self_signed_cert.proxy[0].cert_pem : ""
-    tls_private_key_proxy_cert = local.has_proxy_domain ? tls_private_key.proxy[0].private_key_pem : ""
+    tls_self_signed_cert_proxy = local.has_proxy_domain ? "" : tls_self_signed_cert.proxy[0].cert_pem
+    tls_private_key_proxy_cert = local.has_proxy_domain ? "" : tls_private_key.proxy[0].private_key_pem
 
     # DNS Tunnel
     dns_tunnel_enabled     = var.dns_tunnel_config.enable

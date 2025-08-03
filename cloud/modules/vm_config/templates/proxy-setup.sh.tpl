@@ -75,6 +75,8 @@ STUNNELCONF
 chmod 600 /etc/stunnel/ssl/*
 chmod 600 /etc/stunnel/stunnel.conf
 
+iptables -I INPUT -p tcp --dport 443 -j ACCEPT
+
 # Enable and start services
 systemctl enable stunnel4
 systemctl enable tinyproxy

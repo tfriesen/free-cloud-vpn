@@ -6,7 +6,10 @@ echo "${wireguard_private_key}" > /etc/wireguard/private.pem && openssl pkey -in
 wg pubkey < /etc/wireguard/private.key > /etc/wireguard/public.key
 chmod 600 /etc/wireguard/private.key
 
+#obviously only works for google, TODO: oracle
+if [ "${cloud_provider}" = "google" ]; then
 curl -X PUT -H "Metadata-Flavor: Google" --data "$(cat /etc/wireguard/public.key)" http://metadata.google.internal/computeMetadata/v1/instance/guest-attributes/${vm_guest_attr_namespace}/${wg_pubkey_attr_key} 
+fi
 
 # Create WireGuard configuration
 cat > /etc/wireguard/wg0.conf << WIREGUARDCONF

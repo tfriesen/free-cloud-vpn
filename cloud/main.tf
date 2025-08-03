@@ -31,24 +31,14 @@ module "google" {
 }
 
 module "oracle" {
-  source = "./modules/oracle/cloud_computer"
+  source = "./modules/oracle"
   count  = var.enable_oracle ? 1 : 0
 
-  tenancy_ocid        = var.oracle_config.tenancy_ocid
-  user_ocid           = var.oracle_config.user_ocid
-  fingerprint         = var.oracle_config.fingerprint
-  private_key_path    = var.oracle_config.private_key_path
-  region              = var.oracle_config.region
-  compartment_id      = var.oracle_config.compartment_id
-  availability_domain = var.oracle_config.availability_domain
-  subnet_id           = var.oracle_config.subnet_id
-  image_id            = var.oracle_config.image_id
-  shape               = var.oracle_config.shape
-  display_name        = try(var.oracle_config.display_name, "free-tier-vm")
+  tenancy_ocid         = var.tenancy_ocid
+  alert_email          = var.alert_email
 
   # Pass-throughs for vm_config
   vm_username          = var.gcp_vm_username
-  ssh_keys             = ""
   custom_pre_config    = var.custom_pre_config
   custom_post_config   = var.custom_post_config
   dns_tunnel_config    = var.dns_tunnel_config

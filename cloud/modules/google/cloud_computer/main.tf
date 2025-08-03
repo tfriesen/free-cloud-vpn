@@ -8,6 +8,8 @@ module "vm_config" {
   source = "../../vm_config"
 
   vm_username          = var.vm_username
+  cloud_provider       = "google"
+  arch                 = "x86_64"
   ssh_keys             = var.ssh_keys
   custom_pre_config    = var.custom_pre_config
   custom_post_config   = var.custom_post_config
@@ -97,8 +99,7 @@ resource "google_compute_instance" "free_tier_vm" {
   }
 
   metadata = {
-    # Some hackiness to meet Google's format for ssh-keys: "username:public_key"
-    ssh-keys                = join(":", [split(" ", module.vm_config.effective_ssh_key)[1], split(" ", module.vm_config.effective_ssh_key)[0]])
+    ssh-keys                = "${var.vm_username}:${module.vm_config.effective_ssh_key}"
     enable-guest-attributes = "TRUE"
   }
 

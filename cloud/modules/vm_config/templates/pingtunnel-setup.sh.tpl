@@ -3,9 +3,18 @@ DEBIAN_FRONTEND=noninteractive apt-get install -y wget unzip
 
 # Download and install pingtunnel
 cd /tmp
-# TODO: Make this adaptable based on architeture (eg arm64, x86)
-wget https://github.com/esrrhs/pingtunnel/releases/download/2.8/pingtunnel_linux_amd64.zip
-unzip pingtunnel_linux_amd64.zip
+# Use the architecture variable to download the correct version
+if [ "${arch}" = "arm64" ]; then
+  wget https://github.com/esrrhs/pingtunnel/releases/download/2.8/pingtunnel_linux_arm64.zip
+  unzip pingtunnel_linux_arm64.zip
+elif [ "${arch}" = "x86_64" ]; then
+  wget https://github.com/esrrhs/pingtunnel/releases/download/2.8/pingtunnel_linux_amd64.zip
+  unzip pingtunnel_linux_amd64.zip
+else
+  # Default to x86_64 if arch is not recognized
+  wget https://github.com/esrrhs/pingtunnel/releases/download/2.8/pingtunnel_linux_amd64.zip
+  unzip pingtunnel_linux_amd64.zip
+fi
 chmod +x pingtunnel
 mv pingtunnel /usr/local/bin/
 

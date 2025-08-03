@@ -8,7 +8,9 @@ Also, I wanted to experiment with codegen AI agents, so something like 90% of th
 
 ## Details
 
-Automatically sets up a free-tier VM in Google Cloud. This VM has 2 vCPU cores and 1 GB of RAM. It supports the following methods of connecting and/or tunnelling:
+Automatically sets up a free-tier VM in Google Cloud and Oracle Cloud. This GCP VM has 2 vCPU cores and 1 GB of RAM. This Oracle VM has 4 vCPU cores and a whopping 24GB of RAM! 
+
+Each supports the following methods of connecting and/or tunnelling:
 
 1. SSH on port TCP/22 and any others you want!
 2. HTTPS proxy on TCP/443. Specify a cert or generate a self-signed one. (Letsencrypt support coming, probably!)
@@ -19,7 +21,7 @@ Automatically sets up a free-tier VM in Google Cloud. This VM has 2 vCPU cores a
 
 ### Limits
 
-1. 200GB of outbound transfer per month
+1. 200GB of outbound transfer per month on GCP, or 10TB outbound on Oracle.
 
 ## Install and setup
 
@@ -27,22 +29,35 @@ Since this is still pretty early in development, a lot of the setup is manual. B
 
 You will need to:
 
-1. Create the cloud accounts and projects and obtain appropriate cloud provider credentials (specfically, Google Cloud) and store them in `cloud/.env`. See `cloud/.env.example`. How to do this is outside the scope of this README; Google it, lots of guides exist
+1. Create the cloud accounts and projects and obtain appropriate cloud provider credentials and store them in `cloud/.env`. See `cloud/.env.example`. How to do this is outside the scope of this README; Google it, lots of guides exist
 2. Install opentofu (or terraform). `apt install -y opentofu` should suffice.
-3. Optionaly, set appropriate config variables in `cloud/main.auto.tfvars`. See `cloud/main.auto.tfvars.example`
+3. Set appropriate config variables in `cloud/main.auto.tfvars`. See `cloud/main.auto.tfvars.example`. The default values should work for most people, but you can customize them as needed.
 4. `cd` into `cloud/`, and run `tofu init`
 5. Run `tofu apply`, and if everything looks good, it should deploy your VPN
-6. If everything worked, the output should give you most of what you need to connect. IP address, etc. However, any generated passwords, secrets or private keys will be redacted. To view those, run `tofu output -show-sensitive`
+6. If everything worked, the output should give you most of what you need to connect. IP address, etc. However, any generated passwords, secrets or private keys will be redacted. To view those, run `tofu output -show-sensitive`. Be warned as this information is stored in your tfstate file on-disk and unencrypted
 7. Use your proxies as you see fit. How you can leverage these services to proxy or VPN your traffic is outside the scope of this document. If it's privacy you're after, mind your DNS!
+
+### DynDNS
+
+If you have a domain that you'd like to use for the VMs, you can either configure them manually, or use the `custom_pre_config` inputs to set them up automatically. For example, if you have a domain registered with Hurricane Electric, you can use the following setting in your `main.auto.tfvars`:
+
+```
+custom_pre_config = "if [ $${cloud_provider} = \"google\" ]; then curl 'https://dyn.dns.he.net/nic/update?hostname=vpn1.mydomain.com&password=12345'; elif [ $${cloud_provider} = \"oracle\" ]; then curl 'https://dyn.dns.he.net/nic/update?hostname=vpn2.mydomain.com&password=12345'; fi"
+```
+
+The will let you access your VMs at `vpn1.mydomain.com` and `vpn2.mydomain.com`. Adapt as necessary for other DynDNS providers, like No-IP or Cloudflare or DuckDNS.
 
 ## Roadmap
 
 * Use serverless functionality to proxy HTTP connections (eg tell a lambda to fetch HTTP resources for you)
 * Explore running service on UDP/443 and/or tunnelling over QUIC
 * More cloud providers!
+* v6 support. Google charges for v6, oddly enough. Unsure about Oracle. Could be a good way of getting around network controls, v6 is often neglected by network engineers.
 
 ## Known issues
 
 * Pingtunnel works great, but not encrypted. And your cloud provider will probably send you nasty warnings about DoS'ing people
 * SSH keys on GCP are bugged. They're set almost properly. You'll have to login to the GCP console, edit the config, and then just save it without changing anything. Then they'll work right.
-* Can't ping the other side of the wireguard tunnel. Traffic fowards fine, once you get the routes set up. Probably just a firewall/NAT issue.
+* Can't ping the other side of the wireguard tunnel. Traffic fowards fine, once you get the routes set up. Probably just a firewall/NAT issue. Probably true of the other tunnels as well, currently untested.
+* Probably need to adjust the Oracle firewall some as well.
+

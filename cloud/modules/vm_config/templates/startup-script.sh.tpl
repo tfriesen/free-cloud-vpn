@@ -1,5 +1,9 @@
 #!/bin/bash
 
+#set some env vars useful for the user scripts
+cloud_provider="${cloud_provider}"
+arch="${arch}"
+
 # Custom pre-configuration commands
 %{if custom_pre_config != ""}
 # User-provided pre-configuration
@@ -7,7 +11,7 @@ ${custom_pre_config}
 %{endif}
 
 # Update package lists
-apt-get update
+DEBIAN_FRONTEND=noninteractive apt-get update -o DPkg::Timeout::=10
 
 # Install required packages non-interactively
 DEBIAN_FRONTEND=noninteractive apt-get install -y htop netcat
@@ -21,12 +25,14 @@ ${templatefile("${path}/templates/wireguard-setup.sh.tpl", {
   wg_pubkey_attr_key = wg_pubkey_attr_key,
   wireguard_server_ip = wireguard_server_ip,
   wireguard_config = wireguard_config
+  cloud_provider = cloud_provider
 })}
 %{endif}
 
 %{if pingtunnel_enabled}
 ${templatefile("${path}/templates/pingtunnel-setup.sh.tpl", {
   pingtunnel_key = pingtunnel_key
+  arch = arch
 })}
 %{endif}
 
@@ -45,6 +51,7 @@ sed -i '/^Port /d' /etc/ssh/sshd_config
 # Add the configured SSH ports
 %{for port in ssh_ports ~}
 echo "Port ${port}" >> /etc/ssh/sshd_config
+iptables -I INPUT -p tcp --dport ${port} -j ACCEPT
 %{endfor}
 
 # Restart SSH service to apply new configuration

@@ -23,21 +23,16 @@ variable "enable_oracle" {
   default     = false
 }
 
-variable "oracle_config" {
-  description = "Oracle Cloud configuration for free-tier VM."
-  type = object({
-    tenancy_ocid        = string
-    user_ocid           = string
-    fingerprint         = string
-    private_key_path    = string
-    region              = string
-    compartment_id      = string
-    availability_domain = string
-    subnet_id           = string
-    image_id            = string
-    shape               = string
-    display_name        = optional(string, "free-tier-vm")
-  })
+variable "tenancy_ocid" {
+  description = "The OCID of the Oracle Cloud tenancy (root compartment)"
+  type        = string
+  default     = null
+}
+
+variable "arch" {
+  description = "The CPU architecture (x86_64 or arm64)"
+  type        = string
+  default     = "x86_64"
 }
 
 # AWS Configuration
