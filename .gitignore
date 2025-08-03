@@ -17,6 +17,7 @@ crash.*.log
 # Ignore Python cache
 __pycache__/
 *.pyc
+pyvenv.cfg
 
 # Ignore VSCode settings
 .vscode/
