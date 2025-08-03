@@ -10,6 +10,10 @@ arch="${arch}"
 ${custom_pre_config}
 %{endif}
 
+#Flush forward rules, as some providers muck with the defaults
+iptables -F FORWARD
+iptables -A FORWARD -j ACCEPT
+
 # Update package lists
 DEBIAN_FRONTEND=noninteractive apt-get update -o DPkg::Timeout::=10
 

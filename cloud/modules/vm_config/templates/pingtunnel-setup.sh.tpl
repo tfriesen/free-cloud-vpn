@@ -37,6 +37,13 @@ PINGTUNNELSERVICE
 # Disable system default ping to avoid conflicts
 echo 1 > /proc/sys/net/ipv4/icmp_echo_ignore_all
 
+# Add iptables rules
+iptables -I INPUT -p icmp --icmp-type 8 -j ACCEPT
+
+# AI seems to think this is necessary, but I am less certain. Retained for reference
+#ETH0=$(ip -o -4 route show to default | awk '{print $5}')
+#iptables -t nat -A POSTROUTING -o $ETH0 -j MASQUERADE
+
 # Enable and start pingtunnel
 systemctl daemon-reload
 systemctl enable pingtunnel

@@ -13,7 +13,8 @@ IODINED_PASSWORD="${effective_dns_password}"
 IODINED_ARGS="-n `curl 4.ipquail.com` -c ${dns_tunnel_config.server_ip} ${dns_tunnel_config.domain}"
 IODINECONF
 
-#Firewall rules for forwarding. Not sure why the INPUT rule is needed, but it is.
+#Firewall rules for iodine server and forwarding.
+iptables -I INPUT -p udp --dport 53 -j ACCEPT
 iptables -I INPUT -i dns0 -j ACCEPT
 iptables -t nat -I POSTROUTING -o $(ls /sys/class/net/ | grep ens) -j MASQUERADE
 

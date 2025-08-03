@@ -71,6 +71,19 @@ echo "net.ipv4.conf.default.send_redirects = 0" >> /etc/sysctl.d/60-vpn.conf
 echo "net.ipv4.conf.default.accept_redirects = 0" >> /etc/sysctl.d/60-vpn.conf
 sysctl -p /etc/sysctl.d/60-vpn.conf
 
+# Add iptables rules
+iptables -I INPUT -p udp --dport 500 -j ACCEPT
+iptables -I INPUT -p udp --dport 4500 -j ACCEPT
+iptables -I INPUT -p esp -j ACCEPT
+
+# Enable NAT for VPN clients
+# AI seems to think this is necessary, but I am less certain. Retained for reference
+#ETH0=$(ip -o -4 route show to default | head -1 | awk '{print $5}')
+#iptables -t nat -A POSTROUTING -s ${vpn_client_ip_start}-${vpn_client_ip_end} -o $ETH0 -j MASQUERADE
+#iptables -t nat -A POSTROUTING -o $ETH0 -j MASQUERADE
+
+
+
 # Restart services
 systemctl enable ipsec
 systemctl restart ipsec 

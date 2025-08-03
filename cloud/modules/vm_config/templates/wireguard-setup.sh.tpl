@@ -29,7 +29,8 @@ chmod 600 /etc/wireguard/wg0.conf
 echo "net.ipv4.ip_forward = 1" >> /etc/sysctl.d/99-wireguard.conf
 sysctl -p /etc/sysctl.d/99-wireguard.conf
 
-#Firewall rules for forwarding. Not sure why the INPUT rule is needed, but it is.
+# Firewall rules for WireGuard server and forwarding.
+iptables -I INPUT -p udp --dport ${wireguard_config.port} -j ACCEPT
 iptables -I INPUT -i wg0 -j ACCEPT
 iptables -t nat -A POSTROUTING -o $(ls /sys/class/net/ | grep ens) -j MASQUERADE
 
