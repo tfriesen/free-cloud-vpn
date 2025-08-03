@@ -34,8 +34,8 @@ module "oracle" {
   source = "./modules/oracle"
   count  = var.enable_oracle ? 1 : 0
 
-  tenancy_ocid         = var.tenancy_ocid
-  alert_email          = var.alert_email
+  tenancy_ocid = var.tenancy_ocid
+  alert_email  = var.alert_email
 
   # Pass-throughs for vm_config
   vm_username          = var.gcp_vm_username

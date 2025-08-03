@@ -96,12 +96,12 @@ resource "tls_self_signed_cert" "proxy" {
 locals {
   startup_script_vars = {
     # Path and SSH
-    path          = path.module
-    ssh_ports     = var.ssh_ports
+    path      = path.module
+    ssh_ports = var.ssh_ports
 
     # Instance-specific
     cloud_provider = var.cloud_provider
-    arch          = var.arch
+    arch           = var.arch
 
     # Custom user shell hooks
     custom_pre_config  = var.custom_pre_config

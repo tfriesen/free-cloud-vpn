@@ -10,7 +10,7 @@ data "oci_identity_availability_domains" "ads" {
 
 # Get the latest Ubuntu 22.04 LTS image for ARM (A1 shape)
 data "oci_core_images" "ubuntu_images" {
-  compartment_id = data.oci_identity_tenancy.tenancy.id
+  compartment_id           = data.oci_identity_tenancy.tenancy.id
   operating_system         = "Canonical Ubuntu"
   operating_system_version = "22.04"
   shape                    = var.shape
@@ -146,13 +146,13 @@ resource "oci_core_security_list" "free_tier_sl" {
 
 # Create Subnet
 resource "oci_core_subnet" "free_tier_subnet" {
-  compartment_id      = oci_identity_compartment.free_tier.id
-  vcn_id              = oci_core_vcn.free_tier_vcn.id
-  cidr_block          = "10.0.1.0/24"
-  display_name        = "free-tier-subnet"
-  dns_label           = "freetiersubnet"
-  route_table_id      = oci_core_route_table.free_tier_rt.id
-  security_list_ids   = [oci_core_security_list.free_tier_sl.id]
+  compartment_id             = oci_identity_compartment.free_tier.id
+  vcn_id                     = oci_core_vcn.free_tier_vcn.id
+  cidr_block                 = "10.0.1.0/24"
+  display_name               = "free-tier-subnet"
+  dns_label                  = "freetiersubnet"
+  route_table_id             = oci_core_route_table.free_tier_rt.id
+  security_list_ids          = [oci_core_security_list.free_tier_sl.id]
   prohibit_public_ip_on_vnic = false
 }
 
@@ -191,7 +191,7 @@ locals {
 # For now, we'll just output a message if alert_email is provided
 resource "null_resource" "oracle_alert_placeholder" {
   count = var.alert_email != null ? 1 : 0
-  
+
   provisioner "local-exec" {
     command = "echo 'Oracle Cloud monitoring alerts not yet implemented. Alert email: ${var.alert_email}'"
   }

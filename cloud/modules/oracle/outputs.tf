@@ -83,12 +83,12 @@ output "ipsec_vpn_secrets" {
 output "wireguard" {
   description = "WireGuard VPN configuration and status"
   value = {
-    enabled    = var.wireguard_config.enable
+    enabled = var.wireguard_config.enable
     public_key = coalesce(
-      module.cloud_computer.vm_config.wireguard_public_key, 
-      "There was an error retrieving the public key. It can be retrieved by logging into the VM in the file at '/etc/wireguard/public.key'. Sometimes re-running 'plan' or 'apply' can resolve this.")
-    port       = var.wireguard_config.enable ? var.wireguard_config.port : null
-    server_ip  = var.wireguard_config.enable ? module.cloud_computer.public_ip : null
+      module.cloud_computer.vm_config.wireguard_public_key,
+    "There was an error retrieving the public key. It can be retrieved by logging into the VM in the file at '/etc/wireguard/public.key'. Sometimes re-running 'plan' or 'apply' can resolve this.")
+    port          = var.wireguard_config.enable ? var.wireguard_config.port : null
+    server_ip     = var.wireguard_config.enable ? module.cloud_computer.public_ip : null
     client_config = module.cloud_computer.vm_config.wireguard_client_config
   }
 }
