@@ -466,9 +466,9 @@ class VMServiceTester:
         total_tests = 0
         total_passed = 0
 
-        for vm_key, results in all_results.items():
+        for vm_key, results in sorted(all_results.items()):
             print(f"\n{vm_key}:")
-            for service, passed in results.items():
+            for service, passed in sorted(results.items()):
                 total_tests += 1
                 if passed:
                     total_passed += 1
