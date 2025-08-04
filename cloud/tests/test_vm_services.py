@@ -31,6 +31,13 @@ from dataclasses import dataclass
 from typing import Dict, List, Optional, Tuple
 from pathlib import Path
 
+
+# ANSI color codes
+GREEN = "\033[92m"
+RED = "\033[91m"
+YELLOW = "\033[93m"
+RESET = "\033[0m"
+
 try:
     from dotenv import load_dotenv
     import paramiko
@@ -331,7 +338,7 @@ class VMServiceTester:
             variables = self.get_terraform_variables()
             proxy_password = variables.get("https_proxy_password")
         if not proxy_password:
-            print("    [WARN] No proxy password found in Terraform outputs or tfvars for this VM. Skipping proxy auth test.")
+            print(f"    {YELLOW}[WARN] No proxy password found in Terraform outputs or tfvars for this VM. Skipping proxy auth test.{RESET}")
             return False
 
         proxy_url = f"https://{proxy_username}:{proxy_password}@{vm.ip_address}:443"
@@ -384,7 +391,7 @@ class VMServiceTester:
             elif vm.provider == "oracle":
                 expected_cert = outputs.get("oracle_vm", {}).get("https_proxy_cert")
             if not expected_cert:
-                print("    [WARN] No expected certificate found in Terraform outputs for this VM. Skipping cert check.")
+                print(f"    {YELLOW}[WARN] No expected certificate found in Terraform outputs for this VM. Skipping cert check.{RESET}")
                 return True
             # Normalize for comparison (strip whitespace, etc)
             def norm(cert):
@@ -472,16 +479,16 @@ class VMServiceTester:
                 total_tests += 1
                 if passed:
                     total_passed += 1
-                status = "✓" if passed else "✗"
+                status = f"{GREEN}✓ PASS{RESET}" if passed else f"{RED}✗ FAIL{RESET}"
                 print(f"  {status} {service}")
 
-        print(f"\nOverall: {total_passed}/{total_tests} tests passed")
+        print(f"\nOverall: {GREEN if total_passed == total_tests else RED}{total_passed}/{total_tests} tests passed{RESET}")
 
         if total_passed == total_tests:
-            print("🎉 All services are working correctly!")
+            print(f"{GREEN}🎉 All services are working correctly!{RESET}")
             return 0
         else:
-            print("⚠️  Some services may need attention.")
+            print(f"{YELLOW}⚠️  Some services may need attention.{RESET}")
             return 1
 
 
