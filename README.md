@@ -47,16 +47,32 @@ custom_pre_config = "if [ $${cloud_provider} = \"google\" ]; then curl 'https://
 
 The will let you access your VMs at `vpn1.mydomain.com` and `vpn2.mydomain.com`. Adapt as necessary for other DynDNS providers, like No-IP or Cloudflare or DuckDNS.
 
+## Testing
+
+The `cloud/tests` directory contains a script to test the VMs. Handy to check if your instance and its services came up correctly. It will try to read your config based on the output of your terraform state file and the inputs you specify in your aut.tfvars file. It will test the following services, if they are configured:
+
+* SSH
+* HTTPS proxy
+* Wireguard
+* DNS tunnel
+* Pingtunnel (doesn't currently work correctly)
+* IPSec
+
+To run the tests, follow the setup instructions in `cloud/tests/README.md`.
+
+Most of the test currently only test for connectivity - if the service is up and listening. The HTTPS proxy test, however, will do a more proper end-to-end test, which makes it a handy indicator for the state of the connectivity of the other components.
+
 ## Roadmap
 
 * Use serverless functionality to proxy HTTP connections (eg tell a lambda to fetch HTTP resources for you)
 * Explore running service on UDP/443 and/or tunnelling over QUIC
 * More cloud providers!
-* v6 support. Google charges for v6, oddly enough. Unsure about Oracle. Could be a good way of getting around network controls, v6 is often neglected by network engineers.
+* v6 support. Google charges for v6, oddly enough - only available on their 'Premium' network. Unsure about Oracle. Could be a good way of getting around network controls, v6 is often neglected by network engineers.
+* Forking the pingtunnel project and adding encryption would be a good idea.
 
 ## Known issues
 
-* Pingtunnel works great, but not encrypted. And your cloud provider will probably send you nasty warnings about DoS'ing people
+* Pingtunnel works great, but not encrypted. And the 'password' is a 32-bit int that's sent in the clear. AND your cloud provider will probably send you nasty warnings about DoS'ing people
 * SSH keys on GCP are bugged. They're set almost properly. You'll have to login to the GCP console, edit the config, and then just save it without changing anything. Then they'll work right.
 * Can't ping the other side of the wireguard tunnel. Traffic fowards fine, once you get the routes set up. Probably just a firewall/NAT issue. Probably true of the other tunnels as well, currently untested.
 * Probably need to adjust the Oracle firewall some as well.
