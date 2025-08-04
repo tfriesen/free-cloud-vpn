@@ -18,9 +18,15 @@ Configuration:
 
 import json
 import os
+from re import VERBOSE
 import socket
 import subprocess
 import sys
+import requests
+import ssl
+import socket
+import urllib3
+from requests.exceptions import RequestException
 from dataclasses import dataclass
 from typing import Dict, List, Optional, Tuple
 from pathlib import Path
@@ -307,6 +313,92 @@ class VMServiceTester:
         
         return None
     
+    def test_https_proxy_functional(self, vm: VMInfo) -> bool:
+        """Test proxying an HTTPS request through the VM's proxy, verify IP and cert"""
+        print("    [Functional Test] HTTPS proxy: verifying proxied IP and TLS certificate...")
+        outputs = self.get_terraform_outputs()
+        expected_ip = vm.ip_address
+
+        # Retrieve proxy auth credentials
+        proxy_username = "clouduser"
+        proxy_password = None
+        if vm.provider == "google":
+            proxy_password = outputs.get("google_vm", {}).get("https_proxy_password")
+        elif vm.provider == "oracle":
+            proxy_password = outputs.get("oracle_vm", {}).get("https_proxy_password")
+        # Fallback: check merged variables from tfvars/auto.tfvars
+        if not proxy_password:
+            variables = self.get_terraform_variables()
+            proxy_password = variables.get("https_proxy_password")
+        if not proxy_password:
+            print("    [WARN] No proxy password found in Terraform outputs or tfvars for this VM. Skipping proxy auth test.")
+            return False
+
+        proxy_url = f"https://{proxy_username}:{proxy_password}@{vm.ip_address}:443"
+        proxies = {
+            "https": proxy_url,
+            "http": proxy_url,
+        }
+
+        if VERBOSE:
+            print(f"    [INFO] Proxy url: {proxy_url}")
+      
+        urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+        try:
+            # Use requests to proxy an HTTPS request to api.ipify.org with proxy auth
+            resp = requests.get(
+                "https://api.ipify.org",
+                proxies=proxies,
+                timeout=10,
+                verify=False,  # We'll check cert manually below
+            )
+            if resp.status_code != 200:
+                print(f"    [FAIL] Proxy did not return 200 OK: {resp.status_code}")
+                return False
+            returned_ip = resp.text.strip()
+            print(f"    [INFO] Proxied public IP: {returned_ip}")
+            if returned_ip != expected_ip:
+                print(f"    [FAIL] Proxied IP does not match VM IP: {returned_ip} != {expected_ip}")
+                return False
+        except RequestException as e:
+            print(f"    [FAIL] HTTPS request via proxy failed: {e}")
+            return False
+
+        # Now verify the certificate presented by the proxy
+        try:
+            ctx = ssl._create_unverified_context()
+            conn = ctx.wrap_socket(
+                socket.socket(socket.AF_INET, socket.SOCK_STREAM),
+                server_hostname=vm.ip_address
+            )
+            conn.settimeout(5)
+            conn.connect((vm.ip_address, 443))
+            der_cert = conn.getpeercert(binary_form=True)
+            pem_cert = ssl.DER_cert_to_PEM_cert(der_cert)
+            conn.close()
+            # Get expected cert from outputs
+            expected_cert = None
+            # Try both google_vm and oracle_vm outputs
+            if vm.provider == "google":
+                expected_cert = outputs.get("google_vm", {}).get("https_proxy_cert")
+            elif vm.provider == "oracle":
+                expected_cert = outputs.get("oracle_vm", {}).get("https_proxy_cert")
+            if not expected_cert:
+                print("    [WARN] No expected certificate found in Terraform outputs for this VM. Skipping cert check.")
+                return True
+            # Normalize for comparison (strip whitespace, etc)
+            def norm(cert):
+                return cert.replace("\r", "").replace("\n", "").replace("-----BEGIN CERTIFICATE-----", "").replace("-----END CERTIFICATE-----", "").strip()
+            if norm(pem_cert) == norm(expected_cert):
+                print("    [PASS] Proxy TLS certificate matches Terraform output.")
+                return True
+            else:
+                print("    [FAIL] Proxy TLS certificate does not match expected cert from Terraform output.")
+                return False
+        except Exception as e:
+            print(f"    [FAIL] Error retrieving or comparing proxy TLS certificate: {e}")
+            return False
+
     def test_vm_services(self, vm: VMInfo) -> Dict[str, bool]:
         """Test all services on a VM in parallel"""
         print(f"\nTesting VM: {vm.provider} ({vm.ip_address})")
@@ -320,7 +412,10 @@ class VMServiceTester:
             print(f"  Testing {service.name} ({service.protocol}:{service.port})...")
             success = False
             if service.protocol == "tcp":
-                success = self.test_tcp_port(vm.ip_address, service.port)
+                if service.name == "HTTPS-Proxy":
+                    success = self.test_https_proxy_functional(vm)
+                else:
+                    success = self.test_tcp_port(vm.ip_address, service.port)
             elif service.protocol == "udp":
                 success = self.test_udp_port(vm.ip_address, service.port)
             elif service.protocol == "icmp":
