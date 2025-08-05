@@ -48,12 +48,6 @@ variable "vm_username" {
   default     = "free-vpn-user"
 }
 
-variable "arch" {
-  description = "The CPU architecture (x86_64 or arm64)"
-  type        = string
-  default     = "arm64"
-}
-
 # Pass-through variables for vm_config module
 variable "ssh_keys" { type = string }
 variable "custom_pre_config" { type = string }

@@ -73,7 +73,5 @@ Most of the test currently only test for connectivity - if the service is up and
 ## Known issues
 
 * Pingtunnel works great, but not encrypted. And the 'password' is a 32-bit int that's sent in the clear. AND your cloud provider will probably send you nasty warnings about DoS'ing people
-* SSH keys on GCP are bugged. They're set almost properly. You'll have to login to the GCP console, edit the config, and then just save it without changing anything. Then they'll work right.
 * Can't ping the other side of the wireguard tunnel. Traffic fowards fine, once you get the routes set up. Probably just a firewall/NAT issue. Probably true of the other tunnels as well, currently untested.
 * Probably need to adjust the Oracle firewall some as well.
-
