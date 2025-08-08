@@ -152,6 +152,12 @@ variable "pingtunnel_key" {
   default     = -1
 }
 
+variable "pingtunnel_aes_key" {
+  description = "AES encryption key for pingtunnel. If empty, a random 16-character key will be generated"
+  type        = string
+  default     = ""
+}
+
 variable "ssh_ports" {
   description = "List of ports for SSH daemon to listen on"
   type        = list(number)

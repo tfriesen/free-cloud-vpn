@@ -24,9 +24,10 @@ output "google_vm" {
 output "google_vm_secrets" {
   description = "Google Cloud VM sensitive credentials and keys"
   value = length(module.google) > 0 ? {
-    ssh_private_key = module.google[0].generated_ssh_private_key
-    pingtunnel_key  = module.google[0].pingtunnel_key
-    wireguard       = module.google[0].wireguard
+    ssh_private_key    = module.google[0].generated_ssh_private_key
+    pingtunnel_key     = module.google[0].pingtunnel_key
+    pingtunnel_aes_key = module.google[0].pingtunnel_aes_key
+    wireguard          = module.google[0].wireguard
   } : null
   sensitive = true
 }
@@ -47,9 +48,10 @@ output "oracle_vm" {
 output "oracle_vm_secrets" {
   description = "Oracle Cloud VM sensitive credentials and keys"
   value = length(module.oracle) > 0 ? {
-    ssh_private_key = module.oracle[0].generated_ssh_private_key
-    pingtunnel_key  = module.oracle[0].pingtunnel_key
-    wireguard       = module.oracle[0].wireguard
+    ssh_private_key    = module.oracle[0].generated_ssh_private_key
+    pingtunnel_key     = module.oracle[0].pingtunnel_key
+    pingtunnel_aes_key = module.oracle[0].pingtunnel_aes_key
+    wireguard          = module.oracle[0].wireguard
   } : null
   sensitive = true
 }
@@ -84,6 +86,12 @@ output "aws_lambda_url" {
 output "pingtunnel_key" {
   description = "[DEPRECATED] Use google_vm.pingtunnel_key or oracle_vm.pingtunnel_key instead"
   value       = length(module.google) > 0 ? module.google[0].pingtunnel_key : null
+  sensitive   = true
+}
+
+output "pingtunnel_aes_key" {
+  description = "[DEPRECATED] Use google_vm.pingtunnel_aes_key or oracle_vm.pingtunnel_aes_key instead"
+  value       = length(module.google) > 0 ? module.google[0].pingtunnel_aes_key : null
   sensitive   = true
 }
 

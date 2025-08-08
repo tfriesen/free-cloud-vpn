@@ -112,6 +112,12 @@ variable "pingtunnel_key" {
   }
 }
 
+variable "pingtunnel_aes_key" {
+  description = "AES encryption key for pingtunnel. If empty, a random 16-character key will be generated"
+  type        = string
+  default     = ""
+}
+
 variable "https_proxy_password" {
   description = "Password for the HTTPS proxy. If not specified, a random password will be generated"
   type        = string

@@ -15,6 +15,9 @@ locals {
   effective_pingtunnel_key = var.pingtunnel_key != -1 ? var.pingtunnel_key : (
     var.enable_pingtunnel ? random_integer.pingtunnel_key[0].result : -1
   )
+  effective_pingtunnel_aes_key = var.pingtunnel_aes_key != "" ? var.pingtunnel_aes_key : (
+    var.enable_pingtunnel ? random_password.pingtunnel_aes_key[0].result : ""
+  )
   vpn_client_network    = split("/", var.ipsec_vpn_config.client_ip_pool)[0]
   vpn_client_netmask    = cidrnetmask(var.ipsec_vpn_config.client_ip_pool)
   vpn_server_ip         = cidrhost(var.ipsec_vpn_config.client_ip_pool, 1)
@@ -61,6 +64,12 @@ resource "random_integer" "pingtunnel_key" {
   count = var.enable_pingtunnel && var.pingtunnel_key == -1 ? 1 : 0
   min   = 1000
   max   = 9999
+}
+
+resource "random_password" "pingtunnel_aes_key" {
+  count   = var.enable_pingtunnel && var.pingtunnel_aes_key == "" ? 1 : 0
+  length  = 16
+  special = false
 }
 
 resource "tls_private_key" "wireguard" {
@@ -118,6 +127,7 @@ locals {
     # Pingtunnel
     pingtunnel_enabled = var.enable_pingtunnel
     pingtunnel_key     = local.effective_pingtunnel_key
+    pingtunnel_aes_key = local.effective_pingtunnel_aes_key
 
     # Proxy/HTTPS
     effective_proxy_password   = local.effective_proxy_password

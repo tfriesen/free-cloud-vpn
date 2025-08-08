@@ -25,6 +25,12 @@ output "pingtunnel_key" {
   sensitive   = true
 }
 
+output "pingtunnel_aes_key" {
+  description = "The AES encryption key for pingtunnel (only if enabled and auto-generated)"
+  value       = module.cloud_computer.pingtunnel_aes_key
+  sensitive   = true
+}
+
 output "dns_tunnel_password" {
   description = "The password for the DNS tunnel (only if enabled and auto-generated)"
   value       = module.cloud_computer.dns_tunnel_password

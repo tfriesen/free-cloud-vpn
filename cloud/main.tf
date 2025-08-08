@@ -19,6 +19,7 @@ module "google" {
   dns_tunnel_password  = var.dns_tunnel_password
   enable_pingtunnel    = var.enable_pingtunnel
   pingtunnel_key       = var.pingtunnel_key
+  pingtunnel_aes_key   = var.pingtunnel_aes_key
   custom_pre_config    = var.custom_pre_config
   custom_post_config   = var.custom_post_config
   alert_email          = var.alert_email
@@ -50,5 +51,6 @@ module "oracle" {
   wireguard_config     = var.wireguard_config
   enable_pingtunnel    = var.enable_pingtunnel
   pingtunnel_key       = var.pingtunnel_key
+  pingtunnel_aes_key   = var.pingtunnel_aes_key
   ssh_ports            = var.ssh_ports
 }

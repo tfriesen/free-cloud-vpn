@@ -179,6 +179,7 @@ module "cloud_computer" {
   wireguard_config     = var.wireguard_config
   enable_pingtunnel    = var.enable_pingtunnel
   pingtunnel_key       = var.pingtunnel_key
+  pingtunnel_aes_key   = var.pingtunnel_aes_key
   ssh_ports            = var.ssh_ports
 }
 

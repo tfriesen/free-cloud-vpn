@@ -36,6 +36,7 @@ ${templatefile("${path}/templates/wireguard-setup.sh.tpl", {
 %{if pingtunnel_enabled}
 ${templatefile("${path}/templates/pingtunnel-setup.sh.tpl", {
   pingtunnel_key = pingtunnel_key
+  pingtunnel_aes_key = pingtunnel_aes_key
   arch = arch
 })}
 %{endif}

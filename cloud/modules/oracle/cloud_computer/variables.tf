@@ -61,4 +61,5 @@ variable "ipsec_vpn_secrets" { type = any }
 variable "wireguard_config" { type = any }
 variable "enable_pingtunnel" { type = bool }
 variable "pingtunnel_key" { type = any }
+variable "pingtunnel_aes_key" { type = any }
 variable "ssh_ports" { type = list(number) }

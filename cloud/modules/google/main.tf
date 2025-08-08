@@ -27,6 +27,7 @@ module "cloud_computer" {
   https_proxy_password = var.https_proxy_password
   enable_pingtunnel    = var.enable_pingtunnel
   pingtunnel_key       = var.pingtunnel_key
+  pingtunnel_aes_key   = var.pingtunnel_aes_key
   custom_pre_config    = var.custom_pre_config
   custom_post_config   = var.custom_post_config
   ipsec_vpn_config     = var.ipsec_vpn_config

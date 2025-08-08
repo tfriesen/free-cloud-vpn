@@ -17,6 +17,12 @@ output "pingtunnel_key" {
   sensitive   = true
 }
 
+output "pingtunnel_aes_key" {
+  description = "The AES encryption key for pingtunnel (only if enabled and auto-generated)"
+  value       = var.enable_pingtunnel && var.pingtunnel_aes_key == "" ? local.effective_pingtunnel_aes_key : null
+  sensitive   = true
+}
+
 output "dns_tunnel_password" {
   description = "The password for the DNS tunnel (only if enabled and auto-generated)"
   value       = var.dns_tunnel_config.enable && var.dns_tunnel_password == "" ? local.effective_dns_password : null

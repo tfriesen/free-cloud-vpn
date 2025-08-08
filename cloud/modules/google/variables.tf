@@ -66,6 +66,12 @@ variable "pingtunnel_key" {
   }
 }
 
+variable "pingtunnel_aes_key" {
+  description = "AES encryption key for pingtunnel. If empty, a random 16-character key will be generated"
+  type        = string
+  default     = ""
+}
+
 variable "custom_pre_config" {
   description = "Custom shell commands to run at the start of the startup script. DANGER: This can easily break the setup script"
   type        = string

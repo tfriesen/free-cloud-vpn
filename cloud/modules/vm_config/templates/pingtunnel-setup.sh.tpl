@@ -5,14 +5,14 @@ DEBIAN_FRONTEND=noninteractive apt-get install -y wget unzip
 cd /tmp
 # Use the architecture variable to download the correct version
 if [ "${arch}" = "arm64" ]; then
-  wget https://github.com/esrrhs/pingtunnel/releases/download/2.8/pingtunnel_linux_arm64.zip
-  unzip pingtunnel_linux_arm64.zip
+  wget https://github.com/tfriesen/pingtunnel-encrypted/releases/download/latest/pingtunnel_linux_arm.zip
+  unzip pingtunnel_linux_arm.zip
 elif [ "${arch}" = "x86_64" ]; then
-  wget https://github.com/esrrhs/pingtunnel/releases/download/2.8/pingtunnel_linux_amd64.zip
+  wget https://github.com/tfriesen/pingtunnel-encrypted/releases/download/latest/pingtunnel_linux_amd64.zip
   unzip pingtunnel_linux_amd64.zip
 else
   # Default to x86_64 if arch is not recognized
-  wget https://github.com/esrrhs/pingtunnel/releases/download/2.8/pingtunnel_linux_amd64.zip
+  wget https://github.com/tfriesen/pingtunnel-encrypted/releases/download/latest/pingtunnel_linux_amd64.zip
   unzip pingtunnel_linux_amd64.zip
 fi
 chmod +x pingtunnel
@@ -26,7 +26,7 @@ After=network.target
 
 [Service]
 Type=simple
-ExecStart=/usr/local/bin/pingtunnel -type server -key ${pingtunnel_key} -nolog 1 -noprint 1
+ExecStart=/usr/local/bin/pingtunnel -type server -key ${pingtunnel_key} -nolog 1 -noprint 1 -encrypt aes128 -encrypt-key ${pingtunnel_aes_key}
 Restart=always
 RestartSec=10
 
