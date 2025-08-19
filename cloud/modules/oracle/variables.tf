@@ -156,3 +156,9 @@ variable "ssh_ports" {
     error_message = "SSH ports cannot include 443 (HTTPS) or 53 (DNS) as these are reserved."
   }
 }
+
+variable "ipv6_enabled" {
+  description = "Enable IPv6 for the Oracle VCN, subnet, route table, and instance VNIC."
+  type        = bool
+  default     = true
+}

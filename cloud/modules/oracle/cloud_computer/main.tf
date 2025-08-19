@@ -43,6 +43,7 @@ resource "oci_core_instance" "free_tier_vm" {
 
   create_vnic_details {
     assign_public_ip = true
+    assign_ipv6ip    = var.ipv6_enabled
     subnet_id        = var.subnet_id
   }
 
@@ -55,4 +56,16 @@ resource "oci_core_instance" "free_tier_vm" {
     ssh_authorized_keys = module.vm_config.effective_ssh_key
     user_data           = base64encode(module.vm_config.startup_script)
   }
+}
+
+# Fetch primary VNIC to retrieve IPv6 addresses when enabled
+data "oci_core_vnic_attachments" "primary" {
+  count          = var.ipv6_enabled ? 1 : 0
+  compartment_id = var.compartment_id
+  instance_id    = oci_core_instance.free_tier_vm.id
+}
+
+data "oci_core_vnic" "primary" {
+  count   = var.ipv6_enabled ? 1 : 0
+  vnic_id = data.oci_core_vnic_attachments.primary[0].vnic_attachments[0].vnic_id
 }

@@ -37,6 +37,7 @@ module "oracle" {
 
   tenancy_ocid = var.tenancy_ocid
   alert_email  = var.alert_email
+  ipv6_enabled = var.ipv6_enabled
 
   # Pass-throughs for vm_config
   vm_username          = var.gcp_vm_username

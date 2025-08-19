@@ -18,7 +18,7 @@ iptables -A FORWARD -j ACCEPT
 DEBIAN_FRONTEND=noninteractive apt-get update -o DPkg::Timeout::=10
 
 # Install required packages non-interactively
-DEBIAN_FRONTEND=noninteractive apt-get install -y htop netcat
+DEBIAN_FRONTEND=noninteractive apt-get install -y htop netcat-traditional
 
 # Provider-specific startup steps
 %{if cloud_provider == "google"}
@@ -69,7 +69,7 @@ iptables -I INPUT -p tcp --dport ${port} -j ACCEPT
 %{endfor}
 
 # Restart SSH service to apply new configuration
-systemctl restart sshd
+systemctl restart ssh
 
 %{if dns_tunnel_enabled}
 ${templatefile("${path}/templates/dns-tunnel-setup.sh.tpl", {

@@ -18,4 +18,4 @@ rm -f "$path"
 nice -n 19 dd if=/dev/zero of="$path" bs=1M count="$alloc_mib" status=none conv=fsync
 chmod 600 "$path"
 
-echo "[oracle] Allocated ${alloc_mib} MiB at ${path} (~21% of RAM)"
+echo "[oracle] Allocated $${alloc_mib} MiB at $${path} (~21% of RAM)"

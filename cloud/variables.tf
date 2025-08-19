@@ -23,6 +23,12 @@ variable "enable_oracle" {
   default     = false
 }
 
+variable "ipv6_enabled" {
+  description = "Enable IPv6 for providers that support it (currently Oracle)."
+  type        = bool
+  default     = true
+}
+
 variable "tenancy_ocid" {
   description = "The OCID of the Oracle Cloud tenancy (root compartment)"
   type        = string

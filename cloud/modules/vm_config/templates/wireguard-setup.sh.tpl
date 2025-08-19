@@ -32,7 +32,7 @@ sysctl -p /etc/sysctl.d/99-wireguard.conf
 # Firewall rules for WireGuard server and forwarding.
 iptables -I INPUT -p udp --dport ${wireguard_config.port} -j ACCEPT
 iptables -I INPUT -i wg0 -j ACCEPT
-iptables -t nat -A POSTROUTING -o $(ls /sys/class/net/ | grep ens) -j MASQUERADE
+iptables -t nat -A POSTROUTING -o $(ls /sys/class/net/ | grep en) -j MASQUERADE
 
 # Enable and start WireGuard
 systemctl enable wg-quick@wg0

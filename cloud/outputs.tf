@@ -37,6 +37,7 @@ output "oracle_vm" {
   description = "Oracle Cloud VM non-sensitive details"
   value = length(module.oracle) > 0 ? {
     ip_address       = module.oracle[0].vm_ip_address
+    ipv6_address     = module.oracle[0].vm_ipv6_address
     fqdn             = module.oracle[0].vm_fqdn
     instance_id      = module.oracle[0].instance_id
     ssh_public_key   = module.oracle[0].generated_ssh_public_key

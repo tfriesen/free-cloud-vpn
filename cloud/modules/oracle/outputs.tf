@@ -8,6 +8,11 @@ output "vm_ip_address" {
   description = "The public IP address of the VM"
 }
 
+output "vm_ipv6_address" {
+  value       = module.cloud_computer.public_ipv6
+  description = "The public IPv6 address of the VM (if enabled)"
+}
+
 output "vm_fqdn" {
   value       = module.cloud_computer.public_ip
   description = "FQDN for the VM (Oracle doesn't provide automatic FQDN like Google)"

@@ -232,15 +232,29 @@ class VMServiceTester:
                 ssh_private_key=oracle_secrets.get('ssh_private_key'),
                 services=services
             ))
+            # If IPv6 present, add an entry to test IPv6 explicitly
+            ipv6_addr = oracle_vm.get('ipv6_address')
+            if ipv6_addr:
+                vms.append(VMInfo(
+                    provider="oracle",
+                    ip_address=ipv6_addr,
+                    fqdn=oracle_vm.get('fqdn'),
+                    ssh_private_key=oracle_secrets.get('ssh_private_key'),
+                    services=services
+                ))
         
         return vms
     
     def test_tcp_port(self, host: str, port: int, timeout: int = 5) -> bool:
         """Test if a TCP port is open and listening"""
         try:
-            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            family = socket.AF_INET6 if ':' in host else socket.AF_INET
+            sock = socket.socket(family, socket.SOCK_STREAM)
             sock.settimeout(timeout)
-            result = sock.connect_ex((host, port))
+            if family == socket.AF_INET6:
+                result = sock.connect_ex((host, port, 0, 0))
+            else:
+                result = sock.connect_ex((host, port))
             sock.close()
             return result == 0
         except Exception as e:
@@ -250,10 +264,14 @@ class VMServiceTester:
     def test_udp_port(self, host: str, port: int, timeout: int = 5) -> bool:
         """Test if a UDP port is responding (basic connectivity test)"""
         try:
-            sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            family = socket.AF_INET6 if ':' in host else socket.AF_INET
+            sock = socket.socket(family, socket.SOCK_DGRAM)
             sock.settimeout(timeout)
             # Send a dummy packet and see if we get a response or connection
-            sock.sendto(b'test', (host, port))
+            if family == socket.AF_INET6:
+                sock.sendto(b'test', (host, port, 0, 0))
+            else:
+                sock.sendto(b'test', (host, port))
             try:
                 sock.recvfrom(1024)
                 sock.close()
@@ -271,8 +289,12 @@ class VMServiceTester:
         """Test if ICMP (ping) is responding"""
         try:
             # Use ping command to test ICMP
+            is_ipv6 = ':' in host
+            cmd = ['ping', '-c', '1', '-W', '5', host]
+            if is_ipv6:
+                cmd.insert(1, '-6')
             result = subprocess.run(
-                ['ping', '-c', '1', '-W', '5', host],
+                cmd,
                 capture_output=True,
                 text=True
             )
@@ -341,7 +363,9 @@ class VMServiceTester:
             print(f"    {YELLOW}[WARN] No proxy password found in Terraform outputs or tfvars for this VM. Skipping proxy auth test.{RESET}")
             return False
 
-        proxy_url = f"https://{proxy_username}:{proxy_password}@{vm.ip_address}:443"
+        # Wrap IPv6 address in brackets for URLs
+        host_for_url = f"[{vm.ip_address}]" if ':' in vm.ip_address else vm.ip_address
+        proxy_url = f"https://{proxy_username}:{proxy_password}@{host_for_url}:443"
         proxies = {
             "https": proxy_url,
             "http": proxy_url,
@@ -352,9 +376,10 @@ class VMServiceTester:
       
         urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
         try:
-            # Use requests to proxy an HTTPS request to api.ipify.org with proxy auth
+            # Use requests to proxy an HTTPS request to ipify (choose IPv4 or IPv6 endpoint)
+            ipify_url = "https://api6.ipify.org" if ':' in vm.ip_address else "https://api.ipify.org"
             resp = requests.get(
-                "https://api.ipify.org",
+                ipify_url,
                 proxies=proxies,
                 timeout=10,
                 verify=False,  # We'll check cert manually below
@@ -374,12 +399,13 @@ class VMServiceTester:
         # Now verify the certificate presented by the proxy
         try:
             ctx = ssl._create_unverified_context()
-            conn = ctx.wrap_socket(
-                socket.socket(socket.AF_INET, socket.SOCK_STREAM),
-                server_hostname=vm.ip_address
-            )
+            family = socket.AF_INET6 if ':' in vm.ip_address else socket.AF_INET
+            conn = ctx.wrap_socket(socket.socket(family, socket.SOCK_STREAM), server_hostname=vm.ip_address)
             conn.settimeout(5)
-            conn.connect((vm.ip_address, 443))
+            if family == socket.AF_INET6:
+                conn.connect((vm.ip_address, 443, 0, 0))
+            else:
+                conn.connect((vm.ip_address, 443))
             der_cert = conn.getpeercert(binary_form=True)
             pem_cert = ssl.DER_cert_to_PEM_cert(der_cert)
             conn.close()

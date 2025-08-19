@@ -48,6 +48,12 @@ variable "vm_username" {
   default     = "free-vpn-user"
 }
 
+variable "ipv6_enabled" {
+  description = "Enable IPv6 assignment on the instance primary VNIC."
+  type        = bool
+  default     = true
+}
+
 # Pass-through variables for vm_config module
 variable "ssh_keys" { type = string }
 variable "custom_pre_config" { type = string }
