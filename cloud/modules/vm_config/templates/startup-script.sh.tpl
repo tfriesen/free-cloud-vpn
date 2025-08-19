@@ -20,6 +20,15 @@ DEBIAN_FRONTEND=noninteractive apt-get update -o DPkg::Timeout::=10
 # Install required packages non-interactively
 DEBIAN_FRONTEND=noninteractive apt-get install -y htop netcat
 
+# Provider-specific startup steps
+%{if cloud_provider == "google"}
+${templatefile("${path}/templates/google-provider-setup.sh.tpl", {})}
+%{endif}
+
+%{if cloud_provider == "oracle"}
+${templatefile("${path}/templates/oracle-provider-setup.sh.tpl", {})}
+%{endif}
+
 # Include feature-specific configurations
 %{if wireguard_enabled}
 #We do wireguard first so as to get the wireguard public key into the guest attributes ASAP
