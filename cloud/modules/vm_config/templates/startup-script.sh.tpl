@@ -69,6 +69,8 @@ iptables -I INPUT -p tcp --dport ${port} -j ACCEPT
 %{endfor}
 
 # Restart SSH service to apply new configuration
+systemctl daemon-reload
+systemctl restart ssh.socket
 systemctl restart ssh
 
 %{if dns_tunnel_enabled}
