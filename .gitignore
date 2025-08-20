@@ -13,6 +13,7 @@ crash.*.log
 *.tfvars.json
 *.backup
 *.log
+*.terraform.lock.hcl
 
 # Ignore Python cache
 __pycache__/
@@ -21,3 +22,15 @@ pyvenv.cfg
 
 # Ignore VSCode settings
 .vscode/
+
+# Ignore virtual environment
+.venv/
+
+# Ignore testing files
+cloud/tests/bin
+cloud/tests/lib
+cloud/tests/include
+cloud/tests/lib64
+
+# Ignore zip binaries
+*.zip
