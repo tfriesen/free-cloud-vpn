@@ -13,6 +13,7 @@ output "aws_lambda_aes_key" {
 output "google_vm" {
   description = "Google Cloud VM non-sensitive details"
   value = length(module.google) > 0 ? {
+    vm_instance_name = module.google[0].vm_instance_name
     ip_address       = module.google[0].vm_ip_address
     fqdn             = module.google[0].vm_fqdn
     ssh_public_key   = module.google[0].generated_ssh_public_key
@@ -57,58 +58,9 @@ output "oracle_vm_secrets" {
   sensitive = true
 }
 
-# Individual outputs (deprecated, use google_vm/google_vm_secrets or oracle_vm/oracle_vm_secrets objects instead)
-output "generated_ssh_public_key" {
-  value       = length(module.google) > 0 ? module.google[0].generated_ssh_public_key : null
-  description = "[DEPRECATED] Use google_vm.ssh_public_key or oracle_vm.ssh_public_key instead"
-}
-
-output "generated_ssh_private_key" {
-  value       = length(module.google) > 0 ? module.google[0].generated_ssh_private_key : null
-  sensitive   = true
-  description = "[DEPRECATED] Use google_vm.ssh_private_key or oracle_vm.ssh_private_key instead"
-}
-
-output "vm_ip_address" {
-  value       = length(module.google) > 0 ? module.google[0].vm_ip_address : null
-  description = "[DEPRECATED] Use google_vm.ip_address or oracle_vm.ip_address instead"
-}
-
-output "vm_fqdn" {
-  value       = length(module.google) > 0 ? module.google[0].vm_fqdn : null
-  description = "[DEPRECATED] Use google_vm.fqdn or oracle_vm.fqdn instead"
-}
-
 output "aws_lambda_url" {
   description = "The URL of the AWS Lambda function, if AWS is enabled"
   value       = length(module.aws) > 0 ? module.aws[0].lambda_function_url : null
-}
-
-output "pingtunnel_key" {
-  description = "[DEPRECATED] Use google_vm.pingtunnel_key or oracle_vm.pingtunnel_key instead"
-  value       = length(module.google) > 0 ? module.google[0].pingtunnel_key : null
-  sensitive   = true
-}
-
-output "pingtunnel_aes_key" {
-  description = "[DEPRECATED] Use google_vm.pingtunnel_aes_key or oracle_vm.pingtunnel_aes_key instead"
-  value       = length(module.google) > 0 ? module.google[0].pingtunnel_aes_key : null
-  sensitive   = true
-}
-
-output "dns_tunnel_password" {
-  description = "[DEPRECATED] Use google_vm.dns_tunnel_password or oracle_vm.dns_tunnel_password instead"
-  value       = length(module.google) > 0 ? module.google[0].dns_tunnel_password : null
-  sensitive   = true
-}
-
-output "https_proxy_cert" {
-  value       = length(module.google) > 0 ? module.google[0].https_proxy_cert : null
-  description = "[DEPRECATED] Use google_vm.https_proxy_cert or oracle_vm.https_proxy_cert instead"
-}
-
-output "vm_instance_name" {
-  value = length(module.google) > 0 ? module.google[0].vm_instance_name : null
 }
 
 output "wireguard" {
