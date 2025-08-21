@@ -55,17 +55,110 @@ variable "ipv6_enabled" {
 }
 
 # Pass-through variables for vm_config module
-variable "ssh_keys" { type = string }
-variable "custom_pre_config" { type = string }
-variable "custom_post_config" { type = string }
-variable "dns_tunnel_config" { type = any }
-variable "dns_tunnel_password" { type = string }
-variable "https_proxy_domain" { type = string }
-variable "https_proxy_password" { type = string }
-variable "ipsec_vpn_config" { type = any }
-variable "ipsec_vpn_secrets" { type = any }
-variable "wireguard_config" { type = any }
-variable "enable_pingtunnel" { type = bool }
-variable "pingtunnel_key" { type = any }
-variable "pingtunnel_aes_key" { type = any }
-variable "ssh_ports" { type = list(number) }
+variable "ssh_keys" {
+  description = "SSH keys for the VM."
+  type        = string
+  default     = ""
+}
+
+variable "custom_pre_config" {
+  description = "Custom pre-config script to run on the VM"
+  type        = string
+  default     = ""
+}
+
+variable "custom_post_config" {
+  description = "Custom post-config script to run on the VM"
+  type        = string
+  default     = ""
+}
+
+variable "dns_tunnel_config" {
+  description = "Configuration for the DNS tunnel using iodine"
+  type = object({
+    enable    = optional(bool, true)
+    domain    = string
+    server_ip = optional(string, "172.31.9.1")
+  })
+  default = {
+    enable = true
+    domain = null
+  }
+}
+
+variable "dns_tunnel_password" {
+  description = "Password for the DNS tunnel. If not specified, a random password will be generated"
+  type        = string
+  default     = ""
+}
+
+variable "https_proxy_domain" {
+  description = "Domain name for the HTTPS proxy certificate"
+  type        = string
+  default     = ""
+}
+
+variable "https_proxy_password" {
+  description = "Password for the HTTPS proxy. If not specified, a random password will be generated"
+  type        = string
+  default     = ""
+}
+
+variable "ipsec_vpn_config" {
+  description = "Configuration for the IPSec VPN"
+  type = object({
+    enable         = optional(bool, true)
+    username       = optional(string, "")
+    client_ip_pool = optional(string, "192.168.42.0/24")
+  })
+  default = {
+    enable = true
+  }
+}
+
+variable "ipsec_vpn_secrets" {
+  description = "Secrets for the IPSec VPN"
+  type = object({
+    password = optional(string, "")
+    psk      = optional(string, "")
+  })
+  default   = {}
+  sensitive = true
+}
+
+variable "wireguard_config" {
+  description = "Configuration for WireGuard VPN"
+  type = object({
+    enable            = optional(bool, true)
+    port              = optional(string, "51820")
+    client_ip         = optional(string, "10.0.0.2/24")
+    client_public_key = optional(string, "")
+  })
+  default = {
+    enable = true
+  }
+}
+
+variable "enable_pingtunnel" {
+  description = "Enable pingtunnel for ICMP tunneling"
+  type        = bool
+  default     = true
+}
+
+variable "pingtunnel_key" {
+  description = "Key for pingtunnel authentication. If -1, a random key will be generated"
+  type        = number
+  default     = -1
+}
+
+variable "pingtunnel_aes_key" {
+  description = "AES encryption key for pingtunnel. If empty, a random 16-character key will be generated"
+  type        = string
+  default     = ""
+}
+
+variable "ssh_ports" {
+  description = "List of ports for SSH daemon to listen on"
+  type        = list(number)
+  default     = [22, 80, 8080, 3389, 993, 995, 587, 465, 143, 110, 21, 25]
+}

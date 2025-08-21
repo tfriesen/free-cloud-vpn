@@ -35,12 +35,6 @@ variable "tenancy_ocid" {
   default     = null
 }
 
-variable "arch" {
-  description = "The CPU architecture (x86_64 or arm64)"
-  type        = string
-  default     = "x86_64"
-}
-
 # AWS Configuration
 variable "alert_email" {
   description = "Optional email address to receive free tier alerts. If not provided, alerts will not be configured."
