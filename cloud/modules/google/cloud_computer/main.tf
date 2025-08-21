@@ -26,44 +26,6 @@ module "vm_config" {
   ssh_ports            = var.ssh_ports
 }
 
-resource "google_compute_firewall" "allow_inbound" {
-  name    = "allow-inbound-ports"
-  network = "default"
-
-  allow {
-    protocol = "tcp"
-    ports    = module.vm_config.firewall_tcp_ports
-  }
-
-  allow {
-    protocol = "udp"
-    ports    = module.vm_config.firewall_udp_ports
-  }
-
-  dynamic "allow" {
-    for_each = module.vm_config.enable_icmp ? [1] : []
-    content {
-      protocol = "icmp"
-    }
-  }
-
-  dynamic "allow" {
-    for_each = module.vm_config.enable_esp ? [1] : []
-    content {
-      protocol = "esp"
-    }
-  }
-
-  dynamic "allow" {
-    for_each = module.vm_config.enable_ah ? [1] : []
-    content {
-      protocol = "ah"
-    }
-  }
-
-  source_ranges = ["0.0.0.0/0"]
-  target_tags   = ["http-server", "https-server"]
-}
 
 resource "google_service_account" "vm_service_account" {
   account_id   = "free-tier-vm-sa"

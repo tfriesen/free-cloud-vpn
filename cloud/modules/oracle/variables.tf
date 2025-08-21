@@ -27,6 +27,7 @@ variable "vm_username" {
   default     = "free-vpn-user"
 }
 
+# Pass-through variables for vm_config module
 variable "ssh_keys" {
   description = "SSH public keys to add to the VM. If empty, a key will be generated."
   type        = string
