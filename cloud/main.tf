@@ -3,6 +3,29 @@ module "azure" {
   count  = var.enable_azure ? 1 : 0
 }
 
+module "cloudflare" {
+  source = "./modules/cloudflare"
+  count  = var.enable_cloudflare && var.cloudflare_config.domain != "" ? 1 : 0
+
+  enable = var.enable_cloudflare
+  config = var.cloudflare_config
+
+  provider_hosts = {
+    gcp = {
+      enabled           = var.enable_google
+      ipv4              = try(module.google[0].vm_ip_address, null)
+      ipv6              = null
+      dns_tunnel_enable = var.dns_tunnel_config.enable
+    }
+    oci = {
+      enabled           = var.enable_oracle
+      ipv4              = try(module.oracle[0].vm_ip_address, null)
+      ipv6              = try(module.oracle[0].vm_ipv6_address, null)
+      dns_tunnel_enable = var.dns_tunnel_config.enable
+    }
+  }
+}
+
 module "aws" {
   source = "./modules/aws"
   count  = var.enable_aws ? 1 : 0

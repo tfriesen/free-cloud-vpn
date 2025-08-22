@@ -3,11 +3,20 @@ alert_email          = "myemail@gmail.com"
 emable_azure         = false
 enable_google        = true
 enable_oracle        = true
+enable_cloudflare    = true
 enable_pingtunnel    = true
 https_proxy_password = "password456"
 
 #example using Hurricane Electric's dynamic DNS service to set the VPN host's DNS record
 custom_pre_config = "if [ $${cloud_provider} = \"google\" ]; then curl 'https://dyn.dns.he.net/nic/update?hostname=vpn1.mydomain.com&password=12345'; elif [ $${cloud_provider} = \"oracle\" ]; then curl 'https://dyn.dns.he.net/nic/update?hostname=vpn2.mydomain.com&password=12345'; fi"
+
+cloudflare_config = {
+  domain                     = "mydomain.com"
+  manage_universal_ssl       = true
+  manage_origin_cert         = true
+  origin_cert_validity_years = 15
+  origin_cert_hostnames      = ["mydomain.com", "*.mydomain.com"]
+}
 
 dns_tunnel_config = {
   enable = true

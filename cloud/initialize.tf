@@ -13,6 +13,10 @@ terraform {
       source  = "hashicorp/google"
       version = ">= 4.0"
     }
+    cloudflare = {
+      source  = "cloudflare/cloudflare"
+      version = ">= 4.0"
+    }
   }
 }
 
@@ -25,3 +29,5 @@ provider "azurerm" {
 provider "google" {}
 
 provider "oci" {}
+
+provider "cloudflare" {}

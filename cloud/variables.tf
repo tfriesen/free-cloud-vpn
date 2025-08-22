@@ -23,6 +23,31 @@ variable "enable_oracle" {
   default     = false
 }
 
+# Cloudflare Configuration
+variable "enable_cloudflare" {
+  description = "Enable Cloudflare module"
+  type        = bool
+  default     = false
+}
+
+variable "cloudflare_config" {
+  description = "Configuration for Cloudflare integration (excluding the enable flag)"
+  type = object({
+    domain                     = string
+    manage_universal_ssl       = optional(bool, true)
+    manage_origin_cert         = optional(bool, true)
+    origin_cert_validity_years = optional(number, 15)
+    origin_cert_hostnames      = optional(list(string), [])
+  })
+  default = {
+    domain = ""
+  }
+  validation {
+    condition     = var.cloudflare_config.domain == "" || can(regex("^([a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9]\\.)+[a-zA-Z]{2,}$", var.cloudflare_config.domain))
+    error_message = "If provided, domain must be a valid domain name."
+  }
+}
+
 variable "ipv6_enabled" {
   description = "Enable IPv6 for providers that support it (currently Oracle)."
   type        = bool
