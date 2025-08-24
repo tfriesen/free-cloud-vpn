@@ -16,11 +16,11 @@ variable "config" {
 }
 
 variable "provider_hosts" {
-  description = "Map of provider labels to settings for DNS records (ipv4/ipv6 and whether dns_tunnel is enabled on that provider). Keys are provider labels like 'gcp' or 'oci'."
+  description = "Map of provider labels to settings for DNS records (ipv4/ipv6 and whether dns_tunnel is enabled on that provider). Keys are provider labels like 'gcp' or 'oci'. Presence implies enabled."
   type = map(object({
-    enabled           = bool
-    ipv4              = optional(string)
-    ipv6              = optional(string)
+    ipv4              = string
+    ipv6              = optional(string, null)
+    ipv6_enabled      = optional(bool, false)
     dns_tunnel_enable = optional(bool, false)
   }))
   default = {}

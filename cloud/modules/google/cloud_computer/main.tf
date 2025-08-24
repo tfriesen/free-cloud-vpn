@@ -7,23 +7,25 @@ locals {
 module "vm_config" {
   source = "../../vm_config"
 
-  vm_username          = var.vm_username
-  cloud_provider       = "google"
-  arch                 = "x86_64"
-  ssh_keys             = var.ssh_keys
-  custom_pre_config    = var.custom_pre_config
-  custom_post_config   = var.custom_post_config
-  dns_tunnel_config    = var.dns_tunnel_config
-  dns_tunnel_password  = var.dns_tunnel_password
-  https_proxy_domain   = var.https_proxy_domain
-  https_proxy_password = var.https_proxy_password
-  ipsec_vpn_config     = var.ipsec_vpn_config
-  ipsec_vpn_secrets    = var.ipsec_vpn_secrets
-  wireguard_config     = var.wireguard_config
-  enable_pingtunnel    = var.enable_pingtunnel
-  pingtunnel_key       = var.pingtunnel_key
-  pingtunnel_aes_key   = var.pingtunnel_aes_key
-  ssh_ports            = var.ssh_ports
+  vm_username                   = var.vm_username
+  cloud_provider                = "google"
+  arch                          = "x86_64"
+  ssh_keys                      = var.ssh_keys
+  custom_pre_config             = var.custom_pre_config
+  custom_post_config            = var.custom_post_config
+  dns_tunnel_config             = var.dns_tunnel_config
+  dns_tunnel_password           = var.dns_tunnel_password
+  https_proxy_domain            = var.https_proxy_domain
+  https_proxy_password          = var.https_proxy_password
+  https_proxy_external_cert_pem = var.https_proxy_external_cert_pem
+  https_proxy_external_key_pem  = var.https_proxy_external_key_pem
+  ipsec_vpn_config              = var.ipsec_vpn_config
+  ipsec_vpn_secrets             = var.ipsec_vpn_secrets
+  wireguard_config              = var.wireguard_config
+  enable_pingtunnel             = var.enable_pingtunnel
+  pingtunnel_key                = var.pingtunnel_key
+  pingtunnel_aes_key            = var.pingtunnel_aes_key
+  ssh_ports                     = var.ssh_ports
 }
 
 

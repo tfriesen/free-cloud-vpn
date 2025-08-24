@@ -50,6 +50,19 @@ variable "https_proxy_domain" {
   default     = ""
 }
 
+variable "https_proxy_external_cert_pem" {
+  description = "Optional external certificate (PEM) to use for HTTPS proxy (e.g., Cloudflare Origin CA)"
+  type        = string
+  default     = ""
+}
+
+variable "https_proxy_external_key_pem" {
+  description = "Optional external private key (PEM) for HTTPS proxy"
+  type        = string
+  default     = ""
+  sensitive   = true
+}
+
 variable "enable_pingtunnel" {
   description = "Whether to enable pingtunnel (ICMP tunneling using pingtunnel project)"
   type        = bool

@@ -17,6 +17,10 @@ terraform {
       source  = "cloudflare/cloudflare"
       version = ">= 4.0"
     }
+    tls = {
+      source  = "hashicorp/tls"
+      version = ">= 4.0"
+    }
   }
 }
 
@@ -31,3 +35,5 @@ provider "google" {}
 provider "oci" {}
 
 provider "cloudflare" {}
+
+provider "tls" {}

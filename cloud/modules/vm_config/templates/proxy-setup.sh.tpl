@@ -24,6 +24,16 @@ TINYPROXYCONF
 
 # Create SSL directory
 mkdir -p /etc/stunnel/ssl
+%{if has_external_https_cert}
+# Use externally provided certificate and key
+cat > /etc/stunnel/ssl/cert.pem << 'CERT'
+${https_proxy_external_cert_pem}
+CERT
+
+cat > /etc/stunnel/ssl/key.pem << 'KEY'
+${https_proxy_external_key_pem}
+KEY
+%{else}
 %{if has_proxy_domain}
 # Install certbot for LetsEncrypt
 DEBIAN_FRONTEND=noninteractive apt-get install -y certbot 
@@ -50,6 +60,7 @@ CERT
 cat > /etc/stunnel/ssl/key.pem << 'KEY'
 ${tls_private_key_proxy_cert}
 KEY
+%{endif}
 %{endif}
 
 # Configure stunnel

@@ -66,3 +66,14 @@ output "aws_lambda_url" {
   description = "The URL of the AWS Lambda function, if AWS is enabled"
   value       = length(module.aws) > 0 ? module.aws[0].lambda_function_url : null
 }
+
+# Cloudflare outputs
+output "cloudflare_zone_id" {
+  description = "Cloudflare Zone ID for the specified domain"
+  value       = length(module.cloudflare) > 0 ? module.cloudflare[0].zone_id : null
+}
+
+output "cloudflare_origin_certificate_pem" {
+  description = "Cloudflare Origin CA certificate (PEM)"
+  value       = length(module.cloudflare) > 0 ? module.cloudflare[0].origin_certificate_pem : null
+}

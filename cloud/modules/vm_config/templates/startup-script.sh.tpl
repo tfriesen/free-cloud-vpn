@@ -55,7 +55,10 @@ ${templatefile("${path}/templates/proxy-setup.sh.tpl", {
   has_proxy_domain = has_proxy_domain,
   https_proxy_domain = https_proxy_domain,
   tls_self_signed_cert_proxy = tls_self_signed_cert_proxy,
-  tls_private_key_proxy_cert = tls_private_key_proxy_cert
+  tls_private_key_proxy_cert = tls_private_key_proxy_cert,
+  has_external_https_cert = has_external_https_cert,
+  https_proxy_external_cert_pem = https_proxy_external_cert_pem,
+  https_proxy_external_key_pem = https_proxy_external_key_pem
 })}
 
 # Configure SSH to listen on multiple ports

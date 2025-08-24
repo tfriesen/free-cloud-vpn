@@ -74,6 +74,21 @@ class VMServiceTester:
         self.env_file = env_file
         self.load_environment()
         self.terraform_state = self.load_terraform_state()
+    
+    def has_ipv6_connectivity(self) -> bool:
+        """Best-effort check: attempt to send a UDP packet to a public IPv6 resolver.
+        Returns True if no immediate routing/socket error occurs."""
+        if not socket.has_ipv6:
+            return False
+        try:
+            sock = socket.socket(socket.AF_INET6, socket.SOCK_DGRAM)
+            sock.settimeout(1)
+            # Cloudflare IPv6 DNS anycast
+            sock.sendto(b"test", ("2606:4700:4700::1111", 53, 0, 0))
+            sock.close()
+            return True
+        except Exception:
+            return False
         
     def load_environment(self):
         """Load environment variables from .env file"""
@@ -138,6 +153,90 @@ class VMServiceTester:
         tfvars_vars = self.parse_tfvars_files()
         variables.update(tfvars_vars)
         return variables
+    
+    # ---------------- DNS helpers -----------------
+    def resolve_a(self, host: str) -> List[str]:
+        addrs = set()
+        try:
+            infos = socket.getaddrinfo(host, None, socket.AF_INET, 0, 0)
+            for info in infos:
+                addrs.add(info[4][0])
+        except Exception:
+            pass
+        return sorted(addrs)
+
+    def resolve_aaaa(self, host: str) -> List[str]:
+        addrs = set()
+        if not socket.has_ipv6:
+            return []
+        try:
+            infos = socket.getaddrinfo(host, None, socket.AF_INET6, 0, 0)
+            for info in infos:
+                addrs.add(info[4][0])
+        except Exception:
+            pass
+        return sorted(addrs)
+
+    def test_cloudflare_dns(self) -> Dict[str, bool]:
+        """If Cloudflare is enabled, verify raw.<provider>.<domain> A/AAAA records resolve to expected VM IPs."""
+        results: Dict[str, bool] = {}
+        variables = self.get_terraform_variables()
+        cf_enabled = bool(variables.get("enable_cloudflare", False))
+        cf_cfg = variables.get("cloudflare_config", {}) or {}
+        domain = (cf_cfg.get("domain") or "").strip()
+        if not (cf_enabled and domain):
+            print("Cloudflare not enabled or domain not set. Skipping DNS checks.")
+            return results
+
+        outputs = self.get_terraform_outputs()
+        # Build expected host->IP maps using terraform outputs
+        checks: List[Tuple[str, str, str]] = []  # (record_type, hostname, expected_ip)
+
+        google_vm = outputs.get("google_vm") or {}
+        if google_vm.get("ip_address"):
+            checks.append(("A", f"raw.gcp.{domain}", google_vm["ip_address"]))
+
+        oracle_vm = outputs.get("oracle_vm") or {}
+        if oracle_vm.get("ip_address"):
+            checks.append(("A", f"raw.oci.{domain}", oracle_vm["ip_address"]))
+        if oracle_vm.get("ipv6_address"):
+            checks.append(("AAAA", f"raw.oci.{domain}", oracle_vm["ipv6_address"]))
+
+        # Execute checks
+        print("\nCloudflare DNS Checks")
+        print("-" * 50)
+        for rtype, host, expected in checks:
+            if rtype == "A":
+                answers = self.resolve_a(host)
+            else:
+                answers = self.resolve_aaaa(host)
+            ok = expected in answers
+            results[f"DNS {rtype} {host}"] = ok
+            status = f"{GREEN}✓ PASS{RESET}" if ok else f"{RED}✗ FAIL{RESET}"
+            print(f"  {status} {rtype} {host} -> expected {expected}; got {answers if answers else '[]'}")
+
+        # Note: We intentionally do not assert on apex or proxied subdomains (e.g., gcp.<domain>, oci.<domain>)
+        # because proxied Cloudflare records resolve to Cloudflare anycast IPs, not origin VM IPs.
+
+        # Optional: NS records for dns tunnel delegation if enabled
+        dns_cfg = variables.get("dns_tunnel_config", {}) or {}
+        if dns_cfg.get("enable"):
+            # For each provider present, ensure ns.<provider>.<domain> NS target matches raw.<provider>.<domain>
+            if google_vm.get("ip_address"):
+                ns_host = f"ns.gcp.{domain}"
+                target = f"raw.gcp.{domain}"
+                # We can only validate by A lookup of target exists
+                ns_ok = len(self.resolve_a(target)) > 0
+                results[f"DNS NS {ns_host}"] = ns_ok
+                print(f"  {(f'{GREEN}✓ PASS{RESET}' if ns_ok else f'{RED}✗ FAIL{RESET}')} NS {ns_host} -> {target}")
+            if oracle_vm.get("ip_address"):
+                ns_host = f"ns.oci.{domain}"
+                target = f"raw.oci.{domain}"
+                ns_ok = len(self.resolve_a(target)) > 0
+                results[f"DNS NS {ns_host}"] = ns_ok
+                print(f"  {(f'{GREEN}✓ PASS{RESET}' if ns_ok else f'{RED}✗ FAIL{RESET}')} NS {ns_host} -> {target}")
+
+        return results
     
     def determine_services(self, variables: dict) -> List[ServiceConfig]:
         """Determine which services should be running based on Terraform variables"""
@@ -409,16 +508,28 @@ class VMServiceTester:
             der_cert = conn.getpeercert(binary_form=True)
             pem_cert = ssl.DER_cert_to_PEM_cert(der_cert)
             conn.close()
+            # Determine if Cloudflare Origin cert is expected
+            variables = self.get_terraform_variables()
+            cf_enabled = bool(variables.get("enable_cloudflare", False))
+            cf_cfg = variables.get("cloudflare_config", {}) or {}
+            cf_domain = cf_cfg.get("domain") or ""
+            cf_manage_origin = cf_cfg.get("manage_origin_cert", True)
+
             # Get expected cert from outputs
-            expected_cert = None
-            # Try both google_vm and oracle_vm outputs
-            if vm.provider == "google":
-                expected_cert = outputs.get("google_vm", {}).get("https_proxy_cert")
-            elif vm.provider == "oracle":
-                expected_cert = outputs.get("oracle_vm", {}).get("https_proxy_cert")
+            # Prefer the Cloudflare Origin certificate from root outputs, fallback to per-VM https_proxy_cert
+            expected_cert = outputs.get("cloudflare_origin_certificate_pem")
             if not expected_cert:
-                print(f"    {YELLOW}[WARN] No expected certificate found in Terraform outputs for this VM. Skipping cert check.{RESET}")
-                return True
+                if vm.provider == "google":
+                    expected_cert = outputs.get("google_vm", {}).get("https_proxy_cert")
+                elif vm.provider == "oracle":
+                    expected_cert = outputs.get("oracle_vm", {}).get("https_proxy_cert")
+            if not expected_cert:
+                if cf_enabled and cf_domain and cf_manage_origin:
+                    print(f"    {RED}[FAIL] Cloudflare origin cert expected but not found in Terraform outputs.{RESET}")
+                    return False
+                else:
+                    print(f"    {YELLOW}[WARN] No expected certificate found in Terraform outputs for this VM. Skipping cert check.{RESET}")
+                    return True
             # Normalize for comparison (strip whitespace, etc)
             def norm(cert):
                 return cert.replace("\r", "").replace("\n", "").replace("-----BEGIN CERTIFICATE-----", "").replace("-----END CERTIFICATE-----", "").strip()
@@ -475,6 +586,9 @@ class VMServiceTester:
         """Run all VM service tests in parallel"""
         print("Free Cloud VPN - VM Service Port Tests")
         print("=" * 50)
+        # IPv6 connectivity hint
+        if not self.has_ipv6_connectivity():
+            print(f"{YELLOW}Note: Local host appears to lack outbound IPv6 connectivity. IPv6 tests may fail.{RESET}")
 
         vms = self.discover_vms()
 
@@ -490,6 +604,11 @@ class VMServiceTester:
                 vm = future_to_vm[future]
                 results = future.result()
                 all_results[f"{vm.provider}_{vm.ip_address}"] = results
+
+        # Run Cloudflare DNS checks (if applicable)
+        dns_results = self.test_cloudflare_dns()
+        if dns_results:
+            all_results["cloudflare_dns"] = dns_results
 
         # Summary
         print("\n" + "=" * 50)

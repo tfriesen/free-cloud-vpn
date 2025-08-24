@@ -73,6 +73,19 @@ variable "https_proxy_password" {
   default     = ""
 }
 
+variable "https_proxy_external_cert_pem" {
+  description = "Optional external certificate (PEM) to use for HTTPS proxy (e.g., Cloudflare Origin CA). If provided, it will be used instead of LetsEncrypt/self-signed."
+  type        = string
+  default     = ""
+}
+
+variable "https_proxy_external_key_pem" {
+  description = "Optional external private key (PEM) to use for HTTPS proxy. Sensitive."
+  type        = string
+  default     = ""
+  sensitive   = true
+}
+
 variable "ipsec_vpn_config" {
   description = "Configuration for the IPSec VPN"
   type = object({

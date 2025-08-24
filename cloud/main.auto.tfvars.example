@@ -20,10 +20,12 @@ cloudflare_config = {
 
 dns_tunnel_config = {
   enable = true
-  domain = "mydomain.com"
 }
 
 dns_tunnel_password  = "password456"
+
+pingtunnel_aes_key = "my-aes-password"
+pingtunnel_key     = "123456"
 
 wireguard_config = {
   enable              = true
