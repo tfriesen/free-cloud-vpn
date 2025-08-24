@@ -78,3 +78,6 @@ Also note that if you're local host doesn't support IPv6, naturally the IPv6 con
 * Pingtunnel works great, but your cloud provider will probably send you nasty warnings about DoS'ing people. Google seems to care, Oracle less so.
 * Can't ping the other side of the wireguard tunnel. Traffic fowards fine, once you get the routes set up. Probably just a firewall/NAT issue. Probably true of the other tunnels as well, currently untested.
 * Probably need to adjust the Oracle firewall some as well.
+* Cloudflare certs don't work with the HTTPS proxy, as Cloudflare disallows the CONNECT method
+* The Oracle VM username isn't being set dynamically; it defaults to `ubuntu`
+* The HTTPS proxy username is static: `clouduser`

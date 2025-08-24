@@ -36,7 +36,7 @@ output "dns_tunnel_domain" {
 
 output "https_proxy_cert" {
   description = "The self-signed certificate used by the HTTPS proxy (only if no domain provided)"
-  value       = local.has_proxy_domain ? tls_self_signed_cert.proxy[0].cert_pem : ""
+  value       = local.has_proxy_domain ? "" : tls_self_signed_cert.proxy[0].cert_pem
 }
 
 output "https_proxy_password" {

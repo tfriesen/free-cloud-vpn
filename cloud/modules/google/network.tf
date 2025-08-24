@@ -3,7 +3,7 @@
 # Derive firewall ports and flags from module inputs (same logic as vm_config outputs)
 locals {
   firewall_tcp_ports = concat(
-    ["53", "443"], # DNS and HTTPS
+    ["53", "80", "443"], # DNS and HTTPS
     [for port in var.ssh_ports : tostring(port)]
   )
 

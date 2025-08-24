@@ -102,6 +102,27 @@ resource "oci_core_security_list" "free_tier_sl" {
     }
   }
 
+  # HTTP (80) - for certbot or other
+  ingress_security_rules {
+    protocol = "6" # TCP
+    source   = "0.0.0.0/0"
+    tcp_options {
+      min = 80
+      max = 80
+    }
+  }
+  dynamic "ingress_security_rules" {
+    for_each = var.ipv6_enabled ? [1] : []
+    content {
+      protocol = "6" # TCP
+      source   = "::/0"
+      tcp_options {
+        min = 80
+        max = 80
+      }
+    }
+  }
+
   # DNS (53) TCP and UDP
   ingress_security_rules {
     protocol = "6" # TCP

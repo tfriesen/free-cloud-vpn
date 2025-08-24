@@ -29,7 +29,7 @@ locals {
   #Google-specific constants
   vm_guest_attr_namespace = "free-tier-vm-guestattr-namespace"
   wg_pubkey_attr_key      = "wireguard-public-key"
-  has_external_https_cert = var.https_proxy_external_cert_pem != "" && var.https_proxy_external_key_pem != ""
+  has_external_https_cert = var.https_proxy_external_cert_pem != "" && var.https_proxy_external_cert_pem != null && var.https_proxy_external_key_pem != "" && var.https_proxy_external_key_pem != null
 }
 
 resource "tls_private_key" "generated_key" {

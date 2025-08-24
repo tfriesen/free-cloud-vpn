@@ -86,16 +86,12 @@ variable "dns_tunnel_config" {
   description = "Configuration for the DNS tunnel using iodine"
   type = object({
     enable    = optional(bool, true)
-    domain    = string
+    domain    = optional(string, null)
     server_ip = optional(string, "172.31.9.1")
   })
   default = {
     enable = true
     domain = null
-  }
-  validation {
-    condition     = var.dns_tunnel_config.enable == false || var.dns_tunnel_config.domain != null
-    error_message = "domain must be specified when enable is true"
   }
   validation {
     condition     = var.dns_tunnel_config.domain == null || can(regex("^([a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9]\\.)+[a-zA-Z]{2,}$", var.dns_tunnel_config.domain))

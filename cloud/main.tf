@@ -50,7 +50,7 @@ module "google" {
   custom_post_config            = var.custom_post_config
   alert_email                   = var.alert_email
   https_proxy_password          = var.https_proxy_password
-  https_proxy_domain            = var.https_proxy_domain
+  https_proxy_domain            = var.https_proxy_domain == "" ? "gcp.${var.cloudflare_config.domain}" : var.https_proxy_domain
   https_proxy_external_cert_pem = try(module.cloudflare[0].origin_certificate_pem, "")
   https_proxy_external_key_pem  = try(module.cloudflare[0].origin_private_key_pem, "")
   ipsec_vpn_config              = var.ipsec_vpn_config
@@ -73,7 +73,7 @@ module "oracle" {
   custom_post_config            = var.custom_post_config
   dns_tunnel_config             = var.enable_cloudflare ? merge(var.dns_tunnel_config, { domain = "ns.oci.${var.cloudflare_config.domain}" }) : var.dns_tunnel_config
   dns_tunnel_password           = var.dns_tunnel_password
-  https_proxy_domain            = var.https_proxy_domain
+  https_proxy_domain            = var.https_proxy_domain == "" ? "oci.${var.cloudflare_config.domain}" : var.https_proxy_domain
   https_proxy_password          = var.https_proxy_password
   https_proxy_external_cert_pem = try(module.cloudflare[0].origin_certificate_pem, "")
   https_proxy_external_key_pem  = try(module.cloudflare[0].origin_private_key_pem, "")

@@ -8,8 +8,8 @@ resource "cloudflare_dns_record" "subdomain_a" {
   name    = "${each.key}.${local.zone_name}"
   type    = "A"
   content = each.value.ipv4
-  proxied = true
-  ttl     = 1
+  proxied = var.config.manage_universal_ssl
+  ttl     = var.config.manage_universal_ssl ? 1 : 300
 }
 
 # Apex/root A records pointing to each provider IPv4 (round-robin at root)
@@ -20,8 +20,8 @@ resource "cloudflare_dns_record" "root_a" {
   name    = local.zone_name
   type    = "A"
   content = each.value.ipv4
-  proxied = true
-  ttl     = 1
+  proxied = var.config.manage_universal_ssl
+  ttl     = var.config.manage_universal_ssl ? 1 : 300
 }
 
 # Raw (unproxied) A records per provider: raw.<label>.<domain>
@@ -44,8 +44,8 @@ resource "cloudflare_dns_record" "subdomain_aaaa" {
   name    = "${each.key}.${local.zone_name}"
   type    = "AAAA"
   content = each.value.ipv6
-  proxied = true
-  ttl     = 1
+  proxied = var.config.manage_universal_ssl
+  ttl     = var.config.manage_universal_ssl ? 1 : 300
 }
 
 # Apex/root AAAA records pointing to each IPv6-enabled provider
@@ -56,8 +56,8 @@ resource "cloudflare_dns_record" "root_aaaa" {
   name    = local.zone_name
   type    = "AAAA"
   content = each.value.ipv6
-  proxied = true
-  ttl     = 1
+  proxied = var.config.manage_universal_ssl
+  ttl     = var.config.manage_universal_ssl ? 1 : 300
 }
 
 # Raw (unproxied) AAAA records per provider when IPv6 is provided
