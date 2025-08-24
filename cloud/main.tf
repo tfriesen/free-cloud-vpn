@@ -40,6 +40,8 @@ module "google" {
   source = "./modules/google"
   count  = var.enable_google ? 1 : 0
 
+  alert_email = var.alert_email
+
   vm_username                   = var.gcp_vm_username
   dns_tunnel_config             = var.enable_cloudflare ? merge(var.dns_tunnel_config, { domain = "ns.gcp.${var.cloudflare_config.domain}" }) : var.dns_tunnel_config
   dns_tunnel_password           = var.dns_tunnel_password
@@ -48,7 +50,6 @@ module "google" {
   pingtunnel_aes_key            = var.pingtunnel_aes_key
   custom_pre_config             = var.custom_pre_config
   custom_post_config            = var.custom_post_config
-  alert_email                   = var.alert_email
   https_proxy_password          = var.https_proxy_password
   https_proxy_domain            = var.https_proxy_domain == "" ? "gcp.${var.cloudflare_config.domain}" : var.https_proxy_domain
   https_proxy_external_cert_pem = try(module.cloudflare[0].origin_certificate_pem, "")
