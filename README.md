@@ -65,7 +65,7 @@ To run the tests, follow the setup instructions in `cloud/tests/README.md`.
 
 Most of the test currently only test for connectivity - if the service is up and listening. The HTTPS proxy test, however, will do a more proper end-to-end test, which makes it a handy indicator for the state of the connectivity of the other components.
 
-Also note that if you're local host doesn't support IPv6, naturally the IPv6 connectivity tests will fail.
+Also note that if your local host doesn't support IPv6, naturally the IPv6 connectivity tests will fail.
 
 ## Roadmap
 
