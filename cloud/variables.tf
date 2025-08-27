@@ -231,7 +231,7 @@ variable "wireguard_config" {
 variable "ssh_ports" {
   description = "List of ports for SSH daemon to listen on"
   type        = list(number)
-  default     = [22, 80, 8080, 3389, 993, 995, 587, 465, 143, 110, 21, 25]
+  default     = [22, 8080, 3389, 993, 995, 587, 465, 143, 110, 21, 25]
   validation {
     condition     = length(var.ssh_ports) > 0 && alltrue([for port in var.ssh_ports : port >= 1 && port <= 65535])
     error_message = "ssh_ports must contain at least one port and all ports must be between 1 and 65535"
