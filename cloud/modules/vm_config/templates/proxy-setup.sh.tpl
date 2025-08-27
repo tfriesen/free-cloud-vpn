@@ -36,21 +36,31 @@ KEY
 %{else}
 %{if has_proxy_domain}
 # Install certbot for LetsEncrypt
-DEBIAN_FRONTEND=noninteractive apt-get install -y certbot 
+DEBIAN_FRONTEND=noninteractive apt-get install -y certbot openssl
 
-# Get LetsEncrypt certificate
-certbot certonly --standalone --non-interactive --agree-tos --email admin@${https_proxy_domain} -d ${https_proxy_domain}
+# Attempt to get LetsEncrypt certificate (non-fatal)
+certbot certonly --standalone --non-interactive --agree-tos --email admin@${https_proxy_domain} -d ${https_proxy_domain} || true
 
-# Link certificates
-ln -sf /etc/letsencrypt/live/${https_proxy_domain}/fullchain.pem /etc/stunnel/ssl/cert.pem
-ln -sf /etc/letsencrypt/live/${https_proxy_domain}/privkey.pem /etc/stunnel/ssl/key.pem
+# If LE cert exists, use it; otherwise fall back to self-signed
+if [ -s "/etc/letsencrypt/live/${https_proxy_domain}/fullchain.pem" ] && [ -s "/etc/letsencrypt/live/${https_proxy_domain}/privkey.pem" ]; then
+  ln -sf /etc/letsencrypt/live/${https_proxy_domain}/fullchain.pem /etc/stunnel/ssl/cert.pem
+  ln -sf /etc/letsencrypt/live/${https_proxy_domain}/privkey.pem /etc/stunnel/ssl/key.pem
 
-# Setup cert renewal hook
-cat > /etc/letsencrypt/renewal-hooks/deploy/stunnel << 'RENEWHOOK'
+  # Setup cert renewal hook
+  mkdir -p /etc/letsencrypt/renewal-hooks/deploy
+  cat > /etc/letsencrypt/renewal-hooks/deploy/stunnel << 'RENEWHOOK'
 #!/bin/bash
-systemctl restart stunnel4
+systemctl restart stunnel4 || true
 RENEWHOOK
-chmod +x /etc/letsencrypt/renewal-hooks/deploy/stunnel
+  chmod +x /etc/letsencrypt/renewal-hooks/deploy/stunnel
+else
+  echo "WARN: Let's Encrypt failed or certs not present. Falling back to self-signed certificate." >&2
+  # Generate an ephemeral self-signed cert as fallback
+  # Use Ed25519 for smaller, faster keys
+  openssl req -x509 -newkey ed25519 -days 365 \
+    -subj "/CN=${https_proxy_domain}" \
+    -keyout /etc/stunnel/ssl/key.pem -out /etc/stunnel/ssl/cert.pem -nodes || true
+fi
 %{else}
 # Use self-signed certificate
 cat > /etc/stunnel/ssl/cert.pem << 'CERT'

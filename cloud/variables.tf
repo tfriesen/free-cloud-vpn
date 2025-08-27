@@ -150,7 +150,9 @@ variable "https_proxy_password" {
 }
 
 variable "https_proxy_domain" {
-  description = "Domain to use for the HTTPS proxy's LetsEncrypt certificate. If not specified, a self-signed certificate will be used"
+  description = "Domain to use for the HTTPS proxy's LetsEncrypt certificate. If not specified, a self-signed certificate will be used. 
+    WARNING: If your DNS is not properly sorted, this will likely cause LE to fail. The VM will then fallback to creating a self-signed cert,
+    but this won't be reflected in the outputs."
   type        = string
   default     = ""
   validation {
