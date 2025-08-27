@@ -1,20 +1,19 @@
 #see variables.tf for details and other options
+
 alert_email          = "myemail@gmail.com"
 emable_azure         = false
 enable_google        = true
 enable_oracle        = true
 enable_cloudflare    = true
-enable_pingtunnel    = true
-https_proxy_password = "password456"
 
 #example using Hurricane Electric's dynamic DNS service to set the VPN host's DNS record
 custom_pre_config = "if [ $${cloud_provider} = \"google\" ]; then curl 'https://dyn.dns.he.net/nic/update?hostname=vpn1.mydomain.com&password=12345'; elif [ $${cloud_provider} = \"oracle\" ]; then curl 'https://dyn.dns.he.net/nic/update?hostname=vpn2.mydomain.com&password=12345'; fi"
 
-#be advised that if you use cloudflare's certs, you won't be able to use the HTTPS proxy, as cloudflare disallows the CONNECT method
+#be advised that if you use cloudflare's certs, you won't be able to use the HTTPS proxy, as cloudflare disallows the CONNECT method, unless you accept the origin certs the server will present
 cloudflare_config = {
   domain                     = "mydomain.com"
-  manage_universal_ssl       = true
-  manage_origin_cert         = true
+  manage_universal_ssl       = false
+  manage_origin_cert         = false
   origin_cert_validity_years = 15
   origin_cert_hostnames      = ["mydomain.com", "*.mydomain.com"]
 }
@@ -25,8 +24,18 @@ dns_tunnel_config = {
 
 dns_tunnel_password  = "password456"
 
+enable_pingtunnel  = true
 pingtunnel_aes_key = "my-aes-password"
 pingtunnel_key     = "123456"
+
+https_proxy_config = {
+  enable        = true
+  username      = "clouduser"
+}
+
+https_proxy_secrets = {
+  password = "password123"
+}
 
 wireguard_config = {
   enable              = true
@@ -39,5 +48,5 @@ ipsec_vpn_config = {
 
 ipsec_vpn_secrets = {
   psk             = "a_psk"
-  password        = "a_password"
+  password        = "password789"
 }

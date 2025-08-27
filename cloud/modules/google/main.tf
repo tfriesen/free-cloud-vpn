@@ -20,22 +20,20 @@ resource "time_sleep" "wait_compute_api" {
 module "cloud_computer" {
   source = "./cloud_computer"
 
-  vm_username                   = var.vm_username
-  dns_tunnel_config             = var.dns_tunnel_config
-  dns_tunnel_password           = var.dns_tunnel_password
-  https_proxy_domain            = var.https_proxy_domain
-  https_proxy_password          = var.https_proxy_password
-  https_proxy_external_cert_pem = var.https_proxy_external_cert_pem
-  https_proxy_external_key_pem  = var.https_proxy_external_key_pem
-  enable_pingtunnel             = var.enable_pingtunnel
-  pingtunnel_key                = var.pingtunnel_key
-  pingtunnel_aes_key            = var.pingtunnel_aes_key
-  custom_pre_config             = var.custom_pre_config
-  custom_post_config            = var.custom_post_config
-  ipsec_vpn_config              = var.ipsec_vpn_config
-  ipsec_vpn_secrets             = var.ipsec_vpn_secrets
-  wireguard_config              = var.wireguard_config
-  ssh_ports                     = var.ssh_ports
+  vm_username         = var.vm_username
+  dns_tunnel_config   = var.dns_tunnel_config
+  dns_tunnel_password = var.dns_tunnel_password
+  https_proxy_config  = var.https_proxy_config
+  https_proxy_secrets = var.https_proxy_secrets
+  enable_pingtunnel   = var.enable_pingtunnel
+  pingtunnel_key      = var.pingtunnel_key
+  pingtunnel_aes_key  = var.pingtunnel_aes_key
+  custom_pre_config   = var.custom_pre_config
+  custom_post_config  = var.custom_post_config
+  ipsec_vpn_config    = var.ipsec_vpn_config
+  ipsec_vpn_secrets   = var.ipsec_vpn_secrets
+  wireguard_config    = var.wireguard_config
+  ssh_ports           = var.ssh_ports
 
   # Ensure API is enabled and ready before creating compute resources
   depends_on = [time_sleep.wait_compute_api]

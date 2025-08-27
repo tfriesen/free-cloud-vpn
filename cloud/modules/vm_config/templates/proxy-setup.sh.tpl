@@ -19,7 +19,7 @@ StartServers 10
 MaxRequestsPerChild 0
 Allow 127.0.0.1
 ViaProxyName "tinyproxy"
-BasicAuth clouduser ${effective_proxy_password}
+BasicAuth ${https_proxy_username} ${effective_proxy_password}
 TINYPROXYCONF
 
 # Create SSL directory
@@ -104,4 +104,4 @@ systemctl enable tinyproxy
 systemctl restart tinyproxy
 systemctl restart stunnel4
 
- 
+

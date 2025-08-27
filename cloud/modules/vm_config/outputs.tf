@@ -34,20 +34,22 @@ output "dns_tunnel_domain" {
   value       = var.dns_tunnel_config.enable ? var.dns_tunnel_config.domain : null
 }
 
-output "https_proxy_cert" {
-  description = "The self-signed certificate used by the HTTPS proxy (only if no domain provided)"
-  value       = local.has_proxy_domain ? "" : tls_self_signed_cert.proxy[0].cert_pem
+output "https_proxy" {
+  description = "Non-sensitive HTTPS proxy configuration"
+  value = {
+    username = var.https_proxy_config.username
+    domain   = var.https_proxy_config.domain != "" ? var.https_proxy_config.domain : "proxy.local"
+    cert     = local.has_proxy_domain ? "" : tls_self_signed_cert.proxy[0].cert_pem
+  }
 }
 
-output "https_proxy_password" {
-  value       = local.effective_proxy_password
-  sensitive   = true
-  description = "The password for the HTTPS proxy"
-}
-
-output "https_proxy_domain" {
-  value       = var.https_proxy_domain != "" ? var.https_proxy_domain : "proxy.local"
-  description = "The domain name configured for the HTTPS proxy"
+output "https_proxy_secrets" {
+  description = "Sensitive HTTPS proxy secrets (password, private key)"
+  value = {
+    password         = local.effective_proxy_password
+    external_key_pem = var.https_proxy_secrets.external_key_pem
+  }
+  sensitive = true
 }
 
 output "ipsec_vpn_username" {

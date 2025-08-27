@@ -38,29 +38,33 @@ variable "alert_email" {
   default     = null
 }
 
-variable "https_proxy_password" {
-  description = "Password for the HTTPS proxy. If not specified, a random password will be generated"
-  type        = string
-  default     = ""
+
+variable "https_proxy_config" {
+  description = "Configuration for the HTTPS proxy (BasicAuth, cert, etc.)"
+  type = object({
+    username          = optional(string, "clouduser")
+    domain            = optional(string, "")
+    external_cert_pem = optional(string, "")
+  })
+  default = {}
+  validation {
+    condition     = var.https_proxy_config.domain == null || var.https_proxy_config.domain == "" || can(regex("^([a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9]\\.)+[a-zA-Z]{2,}$", var.https_proxy_config.domain))
+    error_message = "If provided, domain must be a valid domain name."
+  }
 }
 
-variable "https_proxy_domain" {
-  description = "Domain to use for the HTTPS proxy's LetsEncrypt certificate. If not specified, a self-signed certificate will be used"
-  type        = string
-  default     = ""
-}
-
-variable "https_proxy_external_cert_pem" {
-  description = "Optional external certificate (PEM) to use for HTTPS proxy (e.g., Cloudflare Origin CA)"
-  type        = string
-  default     = ""
-}
-
-variable "https_proxy_external_key_pem" {
-  description = "Optional external private key (PEM) for HTTPS proxy"
-  type        = string
-  default     = ""
-  sensitive   = true
+variable "https_proxy_secrets" {
+  description = "Sensitive configuration for the HTTPS proxy (password, private key)"
+  type = object({
+    password         = optional(string, "")
+    external_key_pem = optional(string, "")
+  })
+  default   = {}
+  sensitive = true
+  validation {
+    condition     = var.https_proxy_secrets.password == null || var.https_proxy_secrets.password == "" || can(regex("^[A-Za-z0-9!@#$%^&*()_+\\-=\\[\\]{};:'\",./?]{8,}$", var.https_proxy_secrets.password))
+    error_message = "If provided, password must be at least 8 characters long and contain only letters, numbers, and common special characters."
+  }
 }
 
 variable "enable_pingtunnel" {

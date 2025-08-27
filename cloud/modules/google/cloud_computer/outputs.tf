@@ -46,20 +46,15 @@ output "dns_tunnel_domain" {
   value       = module.vm_config.dns_tunnel_domain
 }
 
-output "https_proxy_cert" {
-  description = "The self-signed certificate used by the HTTPS proxy (only if no domain provided)"
-  value       = module.vm_config.https_proxy_cert
+output "https_proxy" {
+  description = "Non-sensitive HTTPS proxy configuration"
+  value       = module.vm_config.https_proxy
 }
 
-output "https_proxy_password" {
-  value       = module.vm_config.https_proxy_password
+output "https_proxy_secrets" {
+  description = "Sensitive HTTPS proxy secrets (password, private key)"
+  value       = module.vm_config.https_proxy_secrets
   sensitive   = true
-  description = "The password for the HTTPS proxy"
-}
-
-output "https_proxy_domain" {
-  value       = module.vm_config.https_proxy_domain
-  description = "The domain name configured for the HTTPS proxy"
 }
 
 output "ipsec_vpn_username" {

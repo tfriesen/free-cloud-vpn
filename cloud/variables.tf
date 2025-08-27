@@ -139,23 +139,31 @@ variable "pingtunnel_aes_key" {
   default     = ""
 }
 
-variable "https_proxy_password" {
-  description = "Password for the HTTPS proxy. If not specified, a random password will be generated"
-  type        = string
-  default     = ""
+variable "https_proxy_config" {
+  description = "Configuration for the HTTPS proxy (BasicAuth, cert, etc.)"
+  type = object({
+    username          = optional(string, "clouduser")
+    domain            = optional(string, "")
+    external_cert_pem = optional(string, "")
+  })
+  default = {}
   validation {
-    condition     = var.https_proxy_password == "" || can(regex("^[A-Za-z0-9!@#$%^&*()_+\\-=\\[\\]{};:'\",./?]{8,}$", var.https_proxy_password))
-    error_message = "If provided, https_proxy_password must be at least 8 characters long and contain only letters, numbers, and common special characters."
+    condition     = var.https_proxy_config.domain == null || var.https_proxy_config.domain == "" || can(regex("^([a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9]\\.)+[a-zA-Z]{2,}$", var.https_proxy_config.domain))
+    error_message = "If provided, domain must be a valid domain name."
   }
 }
 
-variable "https_proxy_domain" {
-  description = "Domain to use for the HTTPS proxy's LetsEncrypt certificate. If not specified, a self-signed certificate will be used. \nWARNING: If your DNS is not properly sorted, this will likely cause LE to fail. The VM will then fallback to creating a self-signed cert, \nbut this won't be reflected in the outputs."
-  type        = string
-  default     = ""
+variable "https_proxy_secrets" {
+  description = "Sensitive configuration for the HTTPS proxy (password, private key)"
+  type = object({
+    password         = optional(string, "")
+    external_key_pem = optional(string, "")
+  })
+  default   = {}
+  sensitive = true
   validation {
-    condition     = var.https_proxy_domain == "" || can(regex("^([a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9]\\.)+[a-zA-Z]{2,}$", var.https_proxy_domain))
-    error_message = "If provided, https_proxy_domain must be a valid domain name."
+    condition     = var.https_proxy_secrets.password == null || var.https_proxy_secrets.password == "" || can(regex("^[A-Za-z0-9!@#$%^&*()_+\\-=\\[\\]{};:'\",./?]{8,}$", var.https_proxy_secrets.password))
+    error_message = "If provided, password must be at least 8 characters long and contain only letters, numbers, and common special characters."
   }
 }
 

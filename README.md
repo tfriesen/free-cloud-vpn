@@ -8,7 +8,7 @@ Also, I wanted to experiment with codegen AI agents, so something like 90% of th
 
 ## Details
 
-Automatically sets up a free-tier VM in Google Cloud and Oracle Cloud. This GCP VM has 2 vCPU cores and 1 GB of RAM. This Oracle VM has 4 vCPU cores and a whopping 24GB of RAM! Uses Cloudflare to provide DNS and edge certs for the HTTPS proxy.
+Automatically sets up a free-tier VM in Google Cloud and Oracle Cloud. This GCP VM has 2 vCPU cores and 1 GB of RAM. This Oracle VM has 4 vCPU cores and a whopping 24GB of RAM! Optionally uses Cloudflare to provide DNS.
 
 Each supports the following methods of connecting and/or tunnelling:
 
@@ -71,6 +71,7 @@ Also note that if your local host doesn't support IPv6, naturally the IPv6 conne
 
 * Use serverless functionality to proxy HTTP connections (eg tell a lambda to fetch HTTP resources for you)
 * Explore running service on UDP/443 and/or tunnelling over QUIC
+* Explore cloudflared tunnelling service
 * More cloud providers!
 
 ## Known issues
@@ -80,4 +81,4 @@ Also note that if your local host doesn't support IPv6, naturally the IPv6 conne
 * Probably need to adjust the Oracle firewall some as well.
 * Cloudflare certs don't work with the HTTPS proxy, as Cloudflare disallows the CONNECT method
 * The Oracle VM username isn't being set dynamically; it defaults to `ubuntu`
-* The HTTPS proxy username is static: `clouduser`
+* Occasionally a VM will fail to complete its setup. Seems to particularly be an issue with Oracle. It looks like apt isn't letting go of its lock in time? Can be fixed by ssh'ing in and running `sudo bash /var/lib/cloud/instance/scripts/part-001` for Oracle, something similar for Google.

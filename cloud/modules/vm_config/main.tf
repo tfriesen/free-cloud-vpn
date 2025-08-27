@@ -3,8 +3,8 @@ locals {
   effective_dns_password = var.dns_tunnel_password != "" ? var.dns_tunnel_password : (
     var.dns_tunnel_config.enable ? random_password.dns_tunnel[0].result : ""
   )
-  effective_proxy_password = var.https_proxy_password != "" ? var.https_proxy_password : random_password.proxy[0].result
-  has_proxy_domain         = var.https_proxy_domain != ""
+  effective_proxy_password = var.https_proxy_secrets.password != "" ? var.https_proxy_secrets.password : random_password.proxy[0].result
+  has_proxy_domain         = var.https_proxy_config.domain != ""
   effective_vpn_username   = var.ipsec_vpn_config.username != "" ? var.ipsec_vpn_config.username : var.vm_username
   effective_vpn_password = var.ipsec_vpn_secrets.password != "" ? var.ipsec_vpn_secrets.password : (
     var.ipsec_vpn_config.enable ? random_password.vpn[0].result : ""
@@ -29,7 +29,7 @@ locals {
   #Google-specific constants
   vm_guest_attr_namespace = "free-tier-vm-guestattr-namespace"
   wg_pubkey_attr_key      = "wireguard-public-key"
-  has_external_https_cert = var.https_proxy_external_cert_pem != "" && var.https_proxy_external_cert_pem != null && var.https_proxy_external_key_pem != "" && var.https_proxy_external_key_pem != null
+  has_external_https_cert = var.https_proxy_config.external_cert_pem != "" && var.https_proxy_config.external_cert_pem != null && var.https_proxy_secrets.external_key_pem != "" && var.https_proxy_secrets.external_key_pem != null
 }
 
 resource "tls_private_key" "generated_key" {
@@ -44,7 +44,7 @@ resource "random_password" "dns_tunnel" {
 }
 
 resource "random_password" "proxy" {
-  count   = var.https_proxy_password == "" ? 1 : 0
+  count   = var.https_proxy_secrets.password == "" ? 1 : 0
   length  = 16
   special = false
 }
@@ -132,12 +132,13 @@ locals {
 
     # Proxy/HTTPS
     effective_proxy_password      = local.effective_proxy_password
+    https_proxy_username          = var.https_proxy_config.username
     has_proxy_domain              = local.has_proxy_domain
-    https_proxy_domain            = var.https_proxy_domain != "" ? var.https_proxy_domain : "proxy.local"
+    https_proxy_domain            = var.https_proxy_config.domain != "" ? var.https_proxy_config.domain : "proxy.local"
     tls_self_signed_cert_proxy    = local.has_proxy_domain ? "" : tls_self_signed_cert.proxy[0].cert_pem
     tls_private_key_proxy_cert    = local.has_proxy_domain ? "" : tls_private_key.proxy[0].private_key_pem
-    https_proxy_external_cert_pem = var.https_proxy_external_cert_pem
-    https_proxy_external_key_pem  = var.https_proxy_external_key_pem
+    https_proxy_external_cert_pem = var.https_proxy_config.external_cert_pem
+    https_proxy_external_key_pem  = var.https_proxy_secrets.external_key_pem
     has_external_https_cert       = local.has_external_https_cert
 
     # DNS Tunnel

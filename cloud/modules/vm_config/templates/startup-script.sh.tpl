@@ -56,9 +56,10 @@ ${templatefile("${path}/templates/proxy-setup.sh.tpl", {
   https_proxy_domain = https_proxy_domain,
   tls_self_signed_cert_proxy = tls_self_signed_cert_proxy,
   tls_private_key_proxy_cert = tls_private_key_proxy_cert,
-  has_external_https_cert = has_external_https_cert,
   https_proxy_external_cert_pem = https_proxy_external_cert_pem,
-  https_proxy_external_key_pem = https_proxy_external_key_pem
+  https_proxy_external_key_pem = https_proxy_external_key_pem,
+  has_external_https_cert = has_external_https_cert,
+  https_proxy_username = https_proxy_username
 })}
 
 # Configure SSH to listen on multiple ports
@@ -97,4 +98,4 @@ ${templatefile("${path}/templates/ipsec-vpn-setup.sh.tpl", {
 %{if custom_post_config != ""}
 # User-provided post-configuration
 ${custom_post_config}
-%{endif} 
+%{endif}

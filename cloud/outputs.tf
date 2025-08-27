@@ -18,7 +18,7 @@ output "google_vm" {
     ipsec_vpn        = module.google[0].ipsec_vpn
     fqdn             = module.google[0].vm_fqdn
     ssh_public_key   = module.google[0].generated_ssh_public_key
-    https_proxy_cert = module.google[0].https_proxy_cert
+    https_proxy      = module.google[0].https_proxy
   } : null
 }
 
@@ -26,11 +26,12 @@ output "google_vm" {
 output "google_vm_secrets" {
   description = "Google Cloud VM sensitive credentials and keys"
   value = length(module.google) > 0 ? {
-    ipsec_vpn_secrets  = module.google[0].ipsec_vpn_secrets
-    ssh_private_key    = module.google[0].generated_ssh_private_key
-    pingtunnel_key     = module.google[0].pingtunnel_key
-    pingtunnel_aes_key = module.google[0].pingtunnel_aes_key
-    wireguard          = module.google[0].wireguard
+    ipsec_vpn_secrets   = module.google[0].ipsec_vpn_secrets
+    ssh_private_key     = module.google[0].generated_ssh_private_key
+    pingtunnel_key      = module.google[0].pingtunnel_key
+    pingtunnel_aes_key  = module.google[0].pingtunnel_aes_key
+    wireguard           = module.google[0].wireguard
+    https_proxy_secrets = module.google[0].https_proxy_secrets
   } : null
   sensitive = true
 }
@@ -39,13 +40,13 @@ output "google_vm_secrets" {
 output "oracle_vm" {
   description = "Oracle Cloud VM non-sensitive details"
   value = length(module.oracle) > 0 ? {
-    ip_address       = module.oracle[0].vm_ip_address
-    ipv6_address     = module.oracle[0].vm_ipv6_address
-    ipsec_vpn        = module.oracle[0].ipsec_vpn
-    fqdn             = module.oracle[0].vm_fqdn
-    instance_id      = module.oracle[0].instance_id
-    ssh_public_key   = module.oracle[0].generated_ssh_public_key
-    https_proxy_cert = module.oracle[0].https_proxy_cert
+    ip_address     = module.oracle[0].vm_ip_address
+    ipv6_address   = module.oracle[0].vm_ipv6_address
+    ipsec_vpn      = module.oracle[0].ipsec_vpn
+    fqdn           = module.oracle[0].vm_fqdn
+    instance_id    = module.oracle[0].instance_id
+    ssh_public_key = module.oracle[0].generated_ssh_public_key
+    https_proxy    = module.oracle[0].https_proxy
   } : null
 }
 
@@ -53,11 +54,12 @@ output "oracle_vm" {
 output "oracle_vm_secrets" {
   description = "Oracle Cloud VM sensitive credentials and keys"
   value = length(module.oracle) > 0 ? {
-    ipsec_vpn_secrets  = module.oracle[0].ipsec_vpn_secrets
-    ssh_private_key    = module.oracle[0].generated_ssh_private_key
-    pingtunnel_key     = module.oracle[0].pingtunnel_key
-    pingtunnel_aes_key = module.oracle[0].pingtunnel_aes_key
-    wireguard          = module.oracle[0].wireguard
+    ipsec_vpn_secrets   = module.oracle[0].ipsec_vpn_secrets
+    ssh_private_key     = module.oracle[0].generated_ssh_private_key
+    pingtunnel_key      = module.oracle[0].pingtunnel_key
+    pingtunnel_aes_key  = module.oracle[0].pingtunnel_aes_key
+    wireguard           = module.oracle[0].wireguard
+    https_proxy_secrets = module.oracle[0].https_proxy_secrets
   } : null
   sensitive = true
 }

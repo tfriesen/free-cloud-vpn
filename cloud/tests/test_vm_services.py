@@ -450,14 +450,45 @@ class VMServiceTester:
         # Retrieve proxy auth credentials
         proxy_username = "clouduser"
         proxy_password = None
+        # Prefer the new composite outputs: non-sensitive config lives in <provider>_vm.https_proxy
+        # and sensitive secrets live in <provider>_vm_secrets. Fall back to legacy scalar outputs if present.
         if vm.provider == "google":
-            proxy_password = outputs.get("google_vm", {}).get("https_proxy_password")
+            proxy_password = (
+                (outputs.get("google_vm_secrets") or {}).get("https_proxy_secrets", {}) .get("password")
+                or (outputs.get("google_vm") or {}).get("https_proxy_secrets", {}) .get("password")
+                or (outputs.get("google_vm") or {}).get("https_proxy_password")
+            )
+            proxy_username = (
+                (outputs.get("google_vm") or {}).get("https_proxy", {}) .get("username")
+                or (outputs.get("google_vm") or {}).get("https_proxy_username")
+                or proxy_username
+            )
         elif vm.provider == "oracle":
-            proxy_password = outputs.get("oracle_vm", {}).get("https_proxy_password")
-        # Fallback: check merged variables from tfvars/auto.tfvars
+            proxy_password = (
+                (outputs.get("oracle_vm_secrets") or {}).get("https_proxy_secrets", {}) .get("password")
+                or (outputs.get("oracle_vm") or {}).get("https_proxy_secrets", {}) .get("password")
+                or (outputs.get("oracle_vm") or {}).get("https_proxy_password")
+            )
+            proxy_username = (
+                (outputs.get("oracle_vm") or {}).get("https_proxy", {}) .get("username")
+                or (outputs.get("oracle_vm") or {}).get("https_proxy_username")
+                or proxy_username
+            )
+
+        # Fallback: check merged variables from tfvars/auto.tfvars. Support both legacy scalar vars and new object structure.
+        variables = self.get_terraform_variables()
         if not proxy_password:
-            variables = self.get_terraform_variables()
-            proxy_password = variables.get("https_proxy_password")
+            proxy_password = (
+                variables.get("https_proxy_password") or
+                (variables.get("https_proxy_secrets") or {}).get("password") or
+                (variables.get("https_proxy_secrets") or {}).get("password")
+            )
+        # Allow root-level https_proxy_username to override (legacy or new object)
+        proxy_username = (
+            variables.get("https_proxy_username") or
+            (variables.get("https_proxy_config") or {}).get("username") or
+            proxy_username
+        )
         if not proxy_password:
             print(f"    {YELLOW}[WARN] No proxy password found in Terraform outputs or tfvars for this VM. Skipping proxy auth test.{RESET}")
             return False
@@ -516,13 +547,21 @@ class VMServiceTester:
             cf_manage_origin = cf_cfg.get("manage_origin_cert", True)
 
             # Get expected cert from outputs
-            # Prefer the Cloudflare Origin certificate from root outputs, fallback to per-VM https_proxy_cert
+            # Prefer the Cloudflare Origin certificate from root outputs, fallback to per-VM https_proxy.cert (new composite output)
             expected_cert = outputs.get("cloudflare_origin_certificate_pem")
             if not expected_cert:
                 if vm.provider == "google":
-                    expected_cert = outputs.get("google_vm", {}).get("https_proxy_cert")
+                    expected_cert = (
+                        (outputs.get("google_vm") or {}).get("https_proxy", {}) .get("cert")
+                        or (outputs.get("google_vm_secrets") or {}).get("https_proxy_secrets", {}) .get("external_cert_pem")
+                        or (outputs.get("google_vm") or {}).get("https_proxy_cert")
+                    )
                 elif vm.provider == "oracle":
-                    expected_cert = outputs.get("oracle_vm", {}).get("https_proxy_cert")
+                    expected_cert = (
+                        (outputs.get("oracle_vm") or {}).get("https_proxy", {}) .get("cert")
+                        or (outputs.get("oracle_vm_secrets") or {}).get("https_proxy_secrets", {}) .get("external_cert_pem")
+                        or (outputs.get("oracle_vm") or {}).get("https_proxy_cert")
+                    )
             if not expected_cert:
                 if cf_enabled and cf_domain and cf_manage_origin:
                     print(f"    {RED}[FAIL] Cloudflare origin cert expected but not found in Terraform outputs.{RESET}")

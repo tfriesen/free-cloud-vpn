@@ -37,9 +37,15 @@ output "dns_tunnel_password" {
   sensitive   = true
 }
 
-output "https_proxy_cert" {
-  value       = module.cloud_computer.https_proxy_cert
-  description = "The self-signed certificate used by the HTTPS proxy (only if no domain provided)"
+output "https_proxy" {
+  description = "Non-sensitive HTTPS proxy configuration"
+  value       = module.cloud_computer.https_proxy
+}
+
+output "https_proxy_secrets" {
+  description = "Sensitive HTTPS proxy secrets (password, private key)"
+  value       = module.cloud_computer.https_proxy_secrets
+  sensitive   = true
 }
 
 output "wireguard" {

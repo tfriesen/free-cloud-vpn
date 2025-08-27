@@ -42,22 +42,25 @@ module "google" {
 
   alert_email = var.alert_email
 
-  vm_username                   = var.gcp_vm_username
-  dns_tunnel_config             = var.enable_cloudflare ? merge(var.dns_tunnel_config, { domain = "ns.gcp.${var.cloudflare_config.domain}" }) : var.dns_tunnel_config
-  dns_tunnel_password           = var.dns_tunnel_password
-  enable_pingtunnel             = var.enable_pingtunnel
-  pingtunnel_key                = var.pingtunnel_key
-  pingtunnel_aes_key            = var.pingtunnel_aes_key
-  custom_pre_config             = var.custom_pre_config
-  custom_post_config            = var.custom_post_config
-  https_proxy_password          = var.https_proxy_password
-  https_proxy_domain            = var.https_proxy_domain == "" ? "gcp.${var.cloudflare_config.domain}" : var.https_proxy_domain
-  https_proxy_external_cert_pem = try(module.cloudflare[0].origin_certificate_pem, "")
-  https_proxy_external_key_pem  = try(module.cloudflare[0].origin_private_key_pem, "")
-  ipsec_vpn_config              = var.ipsec_vpn_config
-  ipsec_vpn_secrets             = var.ipsec_vpn_secrets
-  wireguard_config              = var.wireguard_config
-  ssh_ports                     = var.ssh_ports
+  vm_username         = var.gcp_vm_username
+  dns_tunnel_config   = var.enable_cloudflare ? merge(var.dns_tunnel_config, { domain = "ns.gcp.${var.cloudflare_config.domain}" }) : var.dns_tunnel_config
+  dns_tunnel_password = var.dns_tunnel_password
+  enable_pingtunnel   = var.enable_pingtunnel
+  pingtunnel_key      = var.pingtunnel_key
+  pingtunnel_aes_key  = var.pingtunnel_aes_key
+  custom_pre_config   = var.custom_pre_config
+  custom_post_config  = var.custom_post_config
+  https_proxy_config = merge(var.https_proxy_config, {
+    domain            = var.https_proxy_config.domain == "" ? "gcp.${var.cloudflare_config.domain}" : var.https_proxy_config.domain,
+    external_cert_pem = try(module.cloudflare[0].origin_certificate_pem, "")
+  })
+  https_proxy_secrets = merge(var.https_proxy_secrets, {
+    external_key_pem = try(module.cloudflare[0].origin_private_key_pem, "")
+  })
+  ipsec_vpn_config  = var.ipsec_vpn_config
+  ipsec_vpn_secrets = var.ipsec_vpn_secrets
+  wireguard_config  = var.wireguard_config
+  ssh_ports         = var.ssh_ports
 }
 
 module "oracle" {
@@ -69,20 +72,23 @@ module "oracle" {
   ipv6_enabled = var.ipv6_enabled
 
   # Pass-throughs for vm_config
-  vm_username                   = var.gcp_vm_username
-  custom_pre_config             = var.custom_pre_config
-  custom_post_config            = var.custom_post_config
-  dns_tunnel_config             = var.enable_cloudflare ? merge(var.dns_tunnel_config, { domain = "ns.oci.${var.cloudflare_config.domain}" }) : var.dns_tunnel_config
-  dns_tunnel_password           = var.dns_tunnel_password
-  https_proxy_domain            = var.https_proxy_domain == "" ? "oci.${var.cloudflare_config.domain}" : var.https_proxy_domain
-  https_proxy_password          = var.https_proxy_password
-  https_proxy_external_cert_pem = try(module.cloudflare[0].origin_certificate_pem, "")
-  https_proxy_external_key_pem  = try(module.cloudflare[0].origin_private_key_pem, "")
-  ipsec_vpn_config              = var.ipsec_vpn_config
-  ipsec_vpn_secrets             = var.ipsec_vpn_secrets
-  wireguard_config              = var.wireguard_config
-  enable_pingtunnel             = var.enable_pingtunnel
-  pingtunnel_key                = var.pingtunnel_key
-  pingtunnel_aes_key            = var.pingtunnel_aes_key
-  ssh_ports                     = var.ssh_ports
+  vm_username         = var.gcp_vm_username
+  custom_pre_config   = var.custom_pre_config
+  custom_post_config  = var.custom_post_config
+  dns_tunnel_config   = var.enable_cloudflare ? merge(var.dns_tunnel_config, { domain = "ns.oci.${var.cloudflare_config.domain}" }) : var.dns_tunnel_config
+  dns_tunnel_password = var.dns_tunnel_password
+  https_proxy_config = merge(var.https_proxy_config, {
+    domain            = var.https_proxy_config.domain == "" ? "oci.${var.cloudflare_config.domain}" : var.https_proxy_config.domain,
+    external_cert_pem = try(module.cloudflare[0].origin_certificate_pem, "")
+  })
+  https_proxy_secrets = merge(var.https_proxy_secrets, {
+    external_key_pem = try(module.cloudflare[0].origin_private_key_pem, "")
+  })
+  ipsec_vpn_config   = var.ipsec_vpn_config
+  ipsec_vpn_secrets  = var.ipsec_vpn_secrets
+  wireguard_config   = var.wireguard_config
+  enable_pingtunnel  = var.enable_pingtunnel
+  pingtunnel_key     = var.pingtunnel_key
+  pingtunnel_aes_key = var.pingtunnel_aes_key
+  ssh_ports          = var.ssh_ports
 }
