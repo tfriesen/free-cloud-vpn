@@ -1,0 +1,65 @@
+output "generated_ssh_public_key" {
+  value = module.cloud_computer.generated_ssh_public_key
+}
+
+output "generated_ssh_private_key" {
+  value     = module.cloud_computer.generated_ssh_private_key
+  sensitive = true
+}
+
+output "vm_ip_address" {
+  value = module.cloud_computer.vm_ip_address
+}
+
+output "vm_instance_name" {
+  value = module.cloud_computer.instance_name
+}
+
+output "vm_fqdn" {
+  value = module.cloud_computer.vm_fqdn
+}
+
+output "pingtunnel_key" {
+  description = "The key for pingtunnel authentication (only if enabled and auto-generated)"
+  value       = module.cloud_computer.pingtunnel_key
+  sensitive   = true
+}
+
+output "pingtunnel_aes_key" {
+  description = "The AES encryption key for pingtunnel (only if enabled and auto-generated)"
+  value       = module.cloud_computer.pingtunnel_aes_key
+  sensitive   = true
+}
+
+output "dns_tunnel_password" {
+  description = "The password for the DNS tunnel (only if enabled and auto-generated)"
+  value       = module.cloud_computer.dns_tunnel_password
+  sensitive   = true
+}
+
+output "https_proxy" {
+  description = "Non-sensitive HTTPS proxy configuration"
+  value       = module.cloud_computer.https_proxy
+}
+
+output "https_proxy_secrets" {
+  description = "Sensitive HTTPS proxy secrets (password, private key)"
+  value       = module.cloud_computer.https_proxy_secrets
+  sensitive   = true
+}
+
+output "wireguard" {
+  description = "WireGuard VPN configuration and status"
+  value       = module.cloud_computer.wireguard
+}
+
+output "ipsec_vpn" {
+  description = "IPSec/IKEv2 VPN configuration and status"
+  value       = module.cloud_computer.ipsec_vpn
+}
+
+output "ipsec_vpn_secrets" {
+  description = "IPSec/IKEv2 VPN sensitive configuration values"
+  value       = module.cloud_computer.ipsec_vpn_secrets
+  sensitive   = true
+}
