@@ -8,6 +8,7 @@ resource "aws_lambda_function" "basic_lambda" {
   architectures    = ["arm64"]
   memory_size      = 128
   timeout          = 900
+  layers           = [aws_lambda_layer_version.requests_layer.arn]
 }
 
 resource "aws_iam_role" "lambda_exec" {
@@ -29,28 +30,6 @@ resource "aws_iam_role_policy_attachment" "lambda_policy" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
-resource "aws_iam_policy" "lambda_secrets_policy" {
-  name        = "lambda-secrets-policy"
-  description = "Allow Lambda to read AES key from Secrets Manager"
-  policy = jsonencode({
-    Version = "2012-10-17",
-    Statement = [
-      {
-        Action = [
-          "secretsmanager:GetSecretValue"
-        ],
-        Effect   = "Allow",
-        Resource = aws_secretsmanager_secret.lambda_aes_key.arn
-      }
-    ]
-  })
-}
-
-resource "aws_iam_role_policy_attachment" "lambda_secrets_policy_attach" {
-  role       = aws_iam_role.lambda_exec.name
-  policy_arn = aws_iam_policy.lambda_secrets_policy.arn
-}
-
 resource "aws_lambda_function_url" "lambda_url" {
   function_name      = aws_lambda_function.basic_lambda.function_name
   authorization_type = "NONE"
@@ -62,11 +41,10 @@ resource "random_password" "aes_key" {
   special = false
 }
 
-resource "aws_secretsmanager_secret" "lambda_aes_key" {
-  name = "lambda-aes-key"
-}
-
-resource "aws_secretsmanager_secret_version" "lambda_aes_key_version" {
-  secret_id     = aws_secretsmanager_secret.lambda_aes_key.id
-  secret_string = random_password.aes_key.result
+# Lambda Layer for dependencies (requests library)
+resource "aws_lambda_layer_version" "requests_layer" {
+  layer_name          = "requests_layer"
+  filename            = "${path.module}/requests_layer.zip"
+  compatible_runtimes = ["python3.12"]
+  description         = "Layer containing third-party Python dependencies such as requests. Build requests_layer.zip by running build_layer.sh in this module."
 }
